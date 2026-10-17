@@ -10,9 +10,11 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { OnboardingChecklist } from '../../../shared/types/onboarding';
 
 export default function OnboardingChecklistCard({ checklist }: { checklist: OnboardingChecklist }) {
+  const { t } = useTranslation();
   const completed = checklist.tasks.filter((task) => task.isCompleted).length;
   const progress = Math.round((completed / Math.max(checklist.tasks.length, 1)) * 100);
 
@@ -21,13 +23,13 @@ export default function OnboardingChecklistCard({ checklist }: { checklist: Onbo
       <CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Employee onboarding
+            {t('onboarding.cardTitle')}
           </Typography>
           <Chip label={`${progress}%`} color="primary" variant="outlined" />
         </Box>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Checklist #{checklist.id} · Employee {checklist.employeeId}
+          {t('onboarding.checklistMeta', { id: checklist.id, employeeId: checklist.employeeId })}
         </Typography>
 
         <List disablePadding>
@@ -37,7 +39,7 @@ export default function OnboardingChecklistCard({ checklist }: { checklist: Onbo
                 <Checkbox checked={task.isCompleted} edge="start" tabIndex={-1} disableRipple />
                 <ListItemText
                   primary={task.title}
-                  secondary={task.description || 'No description'}
+                  secondary={task.description || t('onboarding.noDescription')}
                   sx={{
                     '& .MuiListItemText-primary': { textDecoration: task.isCompleted ? 'line-through' : 'none' },
                   }}

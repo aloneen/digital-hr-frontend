@@ -21,6 +21,7 @@ import {
   Verified,
 } from '@mui/icons-material';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { aiApi } from '../api/aiApi';
 import type { AiAnswerResponse } from '../../../shared/types/ai';
 
@@ -35,22 +36,24 @@ type ChatMessage = {
   timestamp: string;
 };
 
-const promptChips = [
-  'Сколько дней отпуска положено сотруднику JanaPost?',
-  'Как и когда выплачивается аванс по зарплате?',
-  'Как успешно пройти испытательный срок?',
-  'Как оплачивается больничный лист в компании?',
-  'Как получить доступ к курсам в Jana Academy?',
-];
-
 export default function AiJanaPage() {
+  const { t } = useTranslation();
+
+  const promptChips = [
+    t('ai.promptVacation'),
+    t('ai.promptAdvance'),
+    t('ai.promptProbation'),
+    t('ai.promptSickLeave'),
+    t('ai.promptAcademy'),
+  ];
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       sender: 'ai',
-      text: 'Здравствуйте! Я AI Jana — корпоративный HR-ассистент компании JanaPost. Я отвечаю на ваши вопросы строго по утвержденным внутренним регламентам, трудовым политикам и правилам компании со ссылками на первоисточники.',
-      source: 'База знаний JanaPost v2.0',
-      category: 'Онбординг & Справка',
+      text: t('ai.welcomeText'),
+      source: t('ai.kbSource'),
+      category: t('ai.kbCategory'),
       found: true,
       confidence: 1.0,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -83,7 +86,7 @@ export default function AiJanaPage() {
         {
           id: `ai-${Date.now()}`,
           sender: 'ai',
-          text: `Ошибка при обработке запроса: ${err.message}. Пожалуйста, попробуйте еще раз.`,
+          text: t('ai.requestError', { error: err.message }),
           found: false,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
@@ -141,17 +144,17 @@ export default function AiJanaPage() {
           <Box>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                AI Jana — Корпоративный AI-Ассистент
+                {t('ai.title')}
               </Typography>
               <Chip
                 icon={<AutoAwesome sx={{ fontSize: 14, color: '#fef08a !important' }} />}
-                label="Без галлюцинаций"
+                label={t('ai.noHallucinations')}
                 size="small"
                 sx={{ bgcolor: 'rgba(254,240,138,0.2)', color: '#fef08a', fontWeight: 600 }}
               />
             </Box>
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mt: 0.5 }}>
-              Отвечает исключительно по базе внутренних регламентов JanaPost с точным указанием статей и пунктов.
+              {t('ai.subtitle')}
             </Typography>
           </Box>
         </Box>
@@ -160,7 +163,7 @@ export default function AiJanaPage() {
       {/* Suggested Quick Prompts */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 1 }}>
-          Часто задаваемые вопросы:
+          {t('ai.quickQuestions')}
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {promptChips.map((chipText) => (
@@ -218,7 +221,7 @@ export default function AiJanaPage() {
                       fontWeight: 700,
                     }}
                   >
-                    {isAi ? <Psychology fontSize="small" /> : 'Вы'}
+                    {isAi ? <Psychology fontSize="small" /> : t('ai.userShort')}
                   </Avatar>
 
                   <Box sx={{ maxWidth: { xs: '85%', sm: '75%' } }}>
@@ -261,7 +264,7 @@ export default function AiJanaPage() {
                             {msg.confidence !== undefined && (
                               <Chip
                                 icon={<Verified sx={{ fontSize: 14, color: '#16a34a !important' }} />}
-                                label={`${Math.round(msg.confidence * 100)}% совпадение`}
+                                label={`${Math.round(msg.confidence * 100)}% ${t('ai.match')}`}
                                 size="small"
                                 sx={{ bgcolor: '#dcfce7', color: '#166534', fontSize: '0.75rem', fontWeight: 600 }}
                               />
@@ -273,7 +276,7 @@ export default function AiJanaPage() {
                       {isAi && !msg.found && (
                         <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5, color: '#b91c1c' }}>
                           <InfoOutlined fontSize="small" />
-                          <Typography variant="caption">Запрос вне корпоративного регламента</Typography>
+                          <Typography variant="caption">{t('ai.outOfPolicy')}</Typography>
                         </Box>
                       )}
                     </Paper>
@@ -304,7 +307,7 @@ export default function AiJanaPage() {
                   <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
                     <CircularProgress size={16} />
                     <Typography variant="body2" color="text.secondary">
-                      AI Jana ищет ответ в утвержденных регламентах JanaPost...
+                      {t('ai.searching')}
                     </Typography>
                   </Box>
                 </Paper>
@@ -335,7 +338,7 @@ export default function AiJanaPage() {
           >
             <InputBase
               sx={{ ml: 2, flex: 1, fontSize: '0.95rem' }}
-              placeholder="Задайте вопрос AI Jana (например: «Сколько дней отпуска положено?»)..."
+              placeholder={t('ai.inputPlaceholder')}
               value={inputQuestion}
               onChange={(e) => setInputQuestion(e.target.value)}
               disabled={askMutation.isPending}

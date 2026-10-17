@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -29,10 +29,12 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { learningApi } from '../api/learningApi';
 import type { CourseAssignment } from '../../../shared/types/learning';
 
 export default function AcademyPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'my' | 'catalog'>('my');
   const [selectedAssignment, setSelectedAssignment] = useState<CourseAssignment | null>(null);
@@ -40,7 +42,6 @@ export default function AcademyPage() {
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Queries
   const { data: myCourses = [], isLoading: isLoadingMy } = useQuery({
     queryKey: ['learning', 'my-courses'],
     queryFn: learningApi.getMyCourses,
@@ -51,7 +52,6 @@ export default function AcademyPage() {
     queryFn: learningApi.getAllCourses,
   });
 
-  // Mutations
   const updateProgressMutation = useMutation({
     mutationFn: ({ id, progressPercent }: { id: number; progressPercent: number }) =>
       learningApi.updateProgress(id, { progressPercent }),
@@ -62,9 +62,13 @@ export default function AcademyPage() {
       setProgressDialogOpen(false);
       setSelectedAssignment(null);
       if (updated.progressPercent === 100) {
-        setSuccessMessage(`Поздравляем! Курс «${updated.courseTitle}» успешно завершен на 100%!`);
+        setSuccessMessage(
+          t('learning.courseCompleted', { courseTitle: updated.courseTitle }),
+        );
       } else {
-        setSuccessMessage(`Прогресс по курсу обновлен до ${updated.progressPercent}%`);
+        setSuccessMessage(
+          t('learning.courseProgressUpdated', { progressPercent: updated.progressPercent }),
+        );
       }
     },
   });
@@ -87,9 +91,18 @@ export default function AcademyPage() {
   const completedCount = myCourses.filter((c) => c.status === 'COMPLETED').length;
   const inProgressCount = myCourses.filter((c) => c.status !== 'COMPLETED').length;
 
+  const myCoursesTabLabel = useMemo(
+    () => `${t('learning.myCourses')} (${myCourses.length})`,
+    [myCourses.length, t],
+  );
+
+  const catalogTabLabel = useMemo(
+    () => `${t('learning.academyCatalog')} (${allCourses.length})`,
+    [allCourses.length, t],
+  );
+
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 1, md: 2 } }}>
-      {/* Banner */}
       <Card
         sx={{
           mb: 3,
@@ -126,10 +139,10 @@ export default function AcademyPage() {
             </Box>
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                Jana Academy — Корпоративный LMS
+                {t('learning.pageTitle')}
               </Typography>
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mt: 0.5 }}>
-                Прокачивайте ключевые навыки, регламенты JanaPost и отслеживайте прогресс обучения в реальном времени.
+                {t('learning.pageSubtitle')}
               </Typography>
             </Box>
           </Box>
@@ -140,7 +153,7 @@ export default function AcademyPage() {
                 {inProgressCount}
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                В процессе
+                {t('learning.inProgress')}
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center', px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
@@ -148,7 +161,7 @@ export default function AcademyPage() {
                 {completedCount}
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                Завершено
+                {t('learning.completed')}
               </Typography>
             </Box>
           </Box>
@@ -161,7 +174,6 @@ export default function AcademyPage() {
         </Alert>
       )}
 
-      {/* Tabs */}
       <Tabs
         value={activeTab}
         onChange={(_, val) => setActiveTab(val)}
@@ -172,11 +184,10 @@ export default function AcademyPage() {
           '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 },
         }}
       >
-        <Tab label={`Мои курсы (${myCourses.length})`} value="my" />
-        <Tab label={`Каталог Академии (${allCourses.length})`} value="catalog" />
+        <Tab label={myCoursesTabLabel} value="my" />
+        <Tab label={catalogTabLabel} value="catalog" />
       </Tabs>
 
-      {/* Tab 1: My Courses */}
       {activeTab === 'my' && (
         <>
           {isLoadingMy ? (
@@ -187,10 +198,10 @@ export default function AcademyPage() {
             <Card sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
               <MenuBook sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
               <Typography variant="h6" color="text.secondary">
-                Вам пока не назначены курсы
+                {t('learning.noCourses')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Перейдите во вкладку «Каталог Академии», чтобы ознакомиться с доступными программами обучения.
+                {t('learning.noCoursesSubtitle')}
               </Typography>
             </Card>
           ) : (
@@ -217,7 +228,7 @@ export default function AcademyPage() {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
                           <Chip
                             icon={isDone ? <CheckCircle /> : <TrendingUp />}
-                            label={isDone ? 'Завершено' : `${assignment.progressPercent}% пройдено`}
+                            label={isDone ? t('learning.completed') : `${assignment.progressPercent}%`}
                             color={isDone ? 'success' : 'primary'}
                             size="small"
                             sx={{ fontWeight: 600 }}
@@ -226,7 +237,7 @@ export default function AcademyPage() {
                             <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
                               <AccessTime fontSize="small" sx={{ color: 'text.secondary', fontSize: 16 }} />
                               <Typography variant="caption" color="text.secondary">
-                                {assignment.durationHours} ч.
+                                {t('learning.courseDurationHours', { hours: assignment.durationHours })}
                               </Typography>
                             </Box>
                           )}
@@ -237,14 +248,13 @@ export default function AcademyPage() {
                         </Typography>
 
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, minHeight: 40 }}>
-                          {assignment.courseDescription || 'Базовый курс JanaPost по стандартам и процессам компании.'}
+                          {assignment.courseDescription || t('learning.pageSubtitle')}
                         </Typography>
 
-                        {/* Progress Bar */}
                         <Box sx={{ mb: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                             <Typography variant="caption" color="text.secondary">
-                              Прогресс изучения
+                              {t('learning.progressStudy')}
                             </Typography>
                             <Typography variant="caption" sx={{ fontWeight: 700 }}>
                               {assignment.progressPercent}%
@@ -257,9 +267,7 @@ export default function AcademyPage() {
                               height: 8,
                               borderRadius: 4,
                               bgcolor: '#e2e8f0',
-                              '& .MuiLinearProgress-bar': {
-                                bgcolor: isDone ? '#16a34a' : '#7c3aed',
-                              },
+                              '& .MuiLinearProgress-bar': { bgcolor: isDone ? '#16a34a' : '#7c3aed' },
                             }}
                           />
                         </Box>
@@ -277,7 +285,7 @@ export default function AcademyPage() {
                             target="_blank"
                             sx={{ textTransform: 'none' }}
                           >
-                            Материалы курса
+                            {t('learning.courseMaterials')}
                           </Button>
                         ) : (
                           <Box />
@@ -296,7 +304,7 @@ export default function AcademyPage() {
                             borderRadius: 1.5,
                           }}
                         >
-                          {isDone ? 'Пересмотреть' : 'Обновить прогресс'}
+                          {isDone ? t('learning.review') : t('learning.updateProgress')}
                         </Button>
                       </Box>
                     </Card>
@@ -308,7 +316,6 @@ export default function AcademyPage() {
         </>
       )}
 
-      {/* Tab 2: Course Catalog */}
       {activeTab === 'catalog' && (
         <>
           {isLoadingCatalog ? (
@@ -335,7 +342,7 @@ export default function AcademyPage() {
                         <Chip label="JanaPost Academy" size="small" sx={{ bgcolor: '#f3e8ff', color: '#7e22ce', fontWeight: 600 }} />
                         <Chip
                           icon={<AccessTime sx={{ fontSize: 14 }} />}
-                          label={`${course.durationHours} ч.`}
+                          label={t('learning.courseDurationHours', { hours: course.durationHours })}
                           size="small"
                           variant="outlined"
                         />
@@ -356,10 +363,10 @@ export default function AcademyPage() {
                         variant="outlined"
                         sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
                         onClick={() => {
-                          setSuccessMessage(`Курс «${course.title}» доступен для изучения.`);
+                          setSuccessMessage(t('learning.courseAvailable', { courseTitle: course.title }));
                         }}
                       >
-                        Подробнее о курсе
+                        {t('learning.moreInfo')}
                       </Button>
                     </Box>
                   </Card>
@@ -370,15 +377,16 @@ export default function AcademyPage() {
         </>
       )}
 
-      {/* Progress Update Dialog */}
       <Dialog open={progressDialogOpen} onClose={() => setProgressDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Обновление прогресса</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {t('learning.progressUpdateTitle')}
+        </DialogTitle>
         <DialogContent>
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
             {selectedAssignment?.courseTitle}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Укажите фактический процент освоения материалов курса:
+            {t('learning.progressHint')}
           </Typography>
 
           <Box sx={{ px: 2, mb: 2 }}>
@@ -399,7 +407,7 @@ export default function AcademyPage() {
 
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 2 }}>
             <Button size="small" variant="outlined" onClick={() => setProgressVal(50)}>
-              50% (Половина)
+              {t('learning.learnedHalf')}
             </Button>
             <Button
               size="small"
@@ -407,13 +415,13 @@ export default function AcademyPage() {
               color="success"
               onClick={() => setProgressVal(100)}
             >
-              100% (Завершить)
+              {t('learning.learnedComplete')}
             </Button>
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setProgressDialogOpen(false)} color="inherit">
-            Отмена
+            {t('learning.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -421,7 +429,7 @@ export default function AcademyPage() {
             disabled={updateProgressMutation.isPending}
             sx={{ bgcolor: '#7c3aed', '&:hover': { bgcolor: '#6d28d9' }, textTransform: 'none', fontWeight: 600 }}
           >
-            {updateProgressMutation.isPending ? 'Сохранение...' : 'Сохранить результат'}
+            {updateProgressMutation.isPending ? t('learning.saving') : t('learning.saveResult')}
           </Button>
         </DialogActions>
       </Dialog>

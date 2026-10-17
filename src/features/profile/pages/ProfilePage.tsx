@@ -24,10 +24,12 @@ import {
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { profileApi } from '../api/profileApi';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['profile'],
@@ -45,7 +47,7 @@ export default function ProfilePage() {
   if (error || !profile) {
     return (
       <Box sx={{ p: 3 }}>
-        <Typography color="error">Не удалось загрузить данные профиля</Typography>
+        <Typography color="error">{t('profile.loadError')}</Typography>
       </Box>
     );
   }
@@ -57,7 +59,6 @@ export default function ProfilePage() {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 1, md: 2 } }}>
-      {/* Header Banner */}
       <Card
         sx={{
           mb: 3,
@@ -95,7 +96,7 @@ export default function ProfilePage() {
                 {profile.fullName || profile.email}
               </Typography>
               <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mt: 0.5 }}>
-                {profile.position || 'Сотрудник JanaPost'}
+                {profile.position || t('profile.employeeDefault')}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                 <Chip
@@ -140,7 +141,7 @@ export default function ProfilePage() {
                 borderRadius: 2,
               }}
             >
-              Оформить заявку
+              {t('profile.createRequest')}
             </Button>
             <Button
               variant="outlined"
@@ -155,19 +156,18 @@ export default function ProfilePage() {
                 borderRadius: 2,
               }}
             >
-              Спросить AI Jana
+              {t('profile.askAi')}
             </Button>
           </Box>
         </Box>
       </Card>
 
       <Grid container spacing={3}>
-        {/* Left Column: Personal info & Supervisor */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ borderRadius: 3, height: '100%', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Work sx={{ color: 'primary.main' }} /> Информация о сотруднике
+                <Work sx={{ color: 'primary.main' }} /> {t('profile.employeeInfo')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
 
@@ -176,10 +176,10 @@ export default function ProfilePage() {
                   <Business sx={{ color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Департамент / Подразделение
+                      {t('profile.department')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {profile.departmentName || 'Главный офис'}
+                      {profile.departmentName || t('profile.headOffice')}
                     </Typography>
                   </Box>
                 </Box>
@@ -188,10 +188,10 @@ export default function ProfilePage() {
                   <LocationOn sx={{ color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Город / Локация
+                      {t('profile.location')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {profile.city || 'Алматы'}
+                      {profile.city || 'Almaty'}
                     </Typography>
                   </Box>
                 </Box>
@@ -200,10 +200,10 @@ export default function ProfilePage() {
                   <SupervisorAccount sx={{ color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Непосредственный руководитель
+                      {t('profile.manager')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                      {profile.managerName || 'Султанов Ержан Муратович'}
+                      {profile.managerName || t('profile.defaultManager')}
                     </Typography>
                   </Box>
                 </Box>
@@ -212,7 +212,7 @@ export default function ProfilePage() {
                   <CalendarMonth sx={{ color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Дата приема на работу
+                      {t('profile.hireDate')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {profile.hireDate || '01.02.2023'}
@@ -224,7 +224,7 @@ export default function ProfilePage() {
                   <Email sx={{ color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Корпоративный Email
+                      {t('profile.email')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {profile.email}
@@ -236,59 +236,57 @@ export default function ProfilePage() {
           </Card>
         </Grid>
 
-        {/* Right Column: Vacation Balance & LMS */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Vacation Balance Widget */}
             <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <BeachAccess sx={{ color: '#0ea5e9' }} /> Баланс отпуска
+                    <BeachAccess sx={{ color: '#0ea5e9' }} /> {t('profile.vacationBalance')}
                   </Typography>
                   <Chip
-                    label="2026 год"
+                    label={t('profile.year', { year: '2026' })}
                     size="small"
                     sx={{ bgcolor: '#e0f2fe', color: '#0369a1', fontWeight: 600 }}
                   />
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Автоматический расчет трудового стажа и неиспользованных дней
+                  {t('profile.vacationDescription')}
                 </Typography>
 
                 <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: 2, mb: 2, border: '1px solid #e2e8f0' }}>
                   <Grid container spacing={2} sx={{ textAlign: 'center' }}>
                     <Grid size={{ xs: 4 }}>
                       <Typography variant="caption" color="text.secondary">
-                        Положено в год
+                        {t('profile.vacationTotal')}
                       </Typography>
                       <Typography variant="h5" sx={{ fontWeight: 800, color: '#334155' }}>
                         {vacationTotal}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        дней
+                        {t('profile.days')}
                       </Typography>
                     </Grid>
                     <Grid size={{ xs: 4 }}>
                       <Typography variant="caption" color="text.secondary">
-                        Использовано
+                        {t('profile.vacationUsed')}
                       </Typography>
                       <Typography variant="h5" sx={{ fontWeight: 800, color: '#f59e0b' }}>
                         {vacationUsed}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        дней
+                        {t('profile.days')}
                       </Typography>
                     </Grid>
                     <Grid size={{ xs: 4 }}>
                       <Typography variant="caption" color="text.secondary">
-                        Остаток дней
+                        {t('profile.vacationLeft')}
                       </Typography>
                       <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981' }}>
                         {vacationLeft}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        дней
+                        {t('profile.days')}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -296,10 +294,10 @@ export default function ProfilePage() {
                   <Box sx={{ mt: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                       <Typography variant="caption" color="text.secondary">
-                        Использовано {vacationPercent}%
+                        {t('profile.usedPercent', { percent: vacationPercent })}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Осталось {100 - vacationPercent}%
+                        {t('profile.leftPercent', { percent: 100 - vacationPercent })}
                       </Typography>
                     </Box>
                     <LinearProgress
@@ -323,12 +321,11 @@ export default function ProfilePage() {
                   onClick={() => navigate('/requests')}
                   sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
                 >
-                  Запросить отпуск или аванс
+                  {t('profile.requestLeaveOrAdvance')}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* LMS / Jana Academy Summary Widget */}
             <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -336,13 +333,13 @@ export default function ProfilePage() {
                     <School sx={{ color: '#8b5cf6' }} /> Jana Academy
                   </Typography>
                   <Chip
-                    label="LMS Корпоративный"
+                    label={t('profile.lmsCorporate')}
                     size="small"
                     sx={{ bgcolor: '#f3e8ff', color: '#7e22ce', fontWeight: 600 }}
                   />
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Ваш прогресс обучения и назначенные курсы
+                  {t('profile.learningProgress')}
                 </Typography>
 
                 <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -352,7 +349,7 @@ export default function ProfilePage() {
                         {profile.activeCoursesCount ?? 2}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Курсов в процессе
+                        {t('profile.coursesInProgress')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -362,7 +359,7 @@ export default function ProfilePage() {
                         {profile.completedCoursesCount ?? 1}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Пройдено курсов
+                        {t('profile.completedCourses')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -380,7 +377,7 @@ export default function ProfilePage() {
                     borderRadius: 2,
                   }}
                 >
-                  Перейти к обучению в Академии
+                  {t('profile.goToAcademy')}
                 </Button>
               </CardContent>
             </Card>

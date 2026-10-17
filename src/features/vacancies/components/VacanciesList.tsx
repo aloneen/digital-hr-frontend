@@ -6,6 +6,7 @@ import {
   Grid,
   Typography,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { Vacancy } from '../../../shared/types/vacancy';
 
 const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
@@ -15,6 +16,8 @@ const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
 };
 
 export default function VacanciesList({ vacancies }: { vacancies: Vacancy[] }) {
+  const { t } = useTranslation();
+
   return (
     <Grid container spacing={3}>
       {vacancies.map((vacancy) => (
@@ -25,21 +28,21 @@ export default function VacanciesList({ vacancies }: { vacancies: Vacancy[] }) {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {vacancy.title}
                 </Typography>
-                <Chip label={vacancy.status} color={statusColor[vacancy.status] || 'default'} size="small" />
+                <Chip label={t(`vacancies.statuses.${vacancy.status.toLowerCase()}`)} color={statusColor[vacancy.status] || 'default'} size="small" />
               </Box>
 
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {vacancy.description || 'No description provided'}
+                {vacancy.description || t('vacancies.noDescription')}
               </Typography>
 
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                <Chip label={`Dept: ${vacancy.departmentId}`} variant="outlined" size="small" />
-                <Chip label={`City: ${vacancy.city || '—'}`} variant="outlined" size="small" />
-                <Chip label={`Salary: ${vacancy.salaryRange || '—'}`} variant="outlined" size="small" />
+                <Chip label={`${t('vacancies.department')}: ${vacancy.departmentId}`} variant="outlined" size="small" />
+                <Chip label={`${t('vacancies.cityLabel')}: ${vacancy.city || '—'}`} variant="outlined" size="small" />
+                <Chip label={`${t('vacancies.salary')}: ${vacancy.salaryRange || '—'}`} variant="outlined" size="small" />
               </Box>
 
               <Typography variant="caption" color="text.secondary">
-                Requirements: {vacancy.requirements || 'Not specified'}
+                {t('vacancies.requirements')}: {vacancy.requirements || t('vacancies.notSpecified')}
               </Typography>
             </CardContent>
           </Card>

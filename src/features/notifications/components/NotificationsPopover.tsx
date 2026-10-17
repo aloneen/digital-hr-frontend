@@ -19,19 +19,20 @@ import {
   NotificationsNone,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { notificationsApi } from '../api/notificationsApi';
 
 export default function NotificationsPopover() {
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const open = Boolean(anchorEl);
 
-  // Queries
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: notificationsApi.getUnreadCount,
-    refetchInterval: 15000, // poll every 15s
+    refetchInterval: 15000,
   });
 
   const { data: notifications = [], isLoading } = useQuery({
@@ -40,7 +41,6 @@ export default function NotificationsPopover() {
     enabled: open,
   });
 
-  // Mutations
   const markAsReadMutation = useMutation({
     mutationFn: (id: number) => notificationsApi.markAsRead(id),
     onSuccess: () => {
@@ -99,11 +99,11 @@ export default function NotificationsPopover() {
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-              Уведомления
+              {t('notifications.title')}
             </Typography>
             {unreadCount > 0 && (
               <Typography variant="caption" sx={{ bgcolor: 'error.main', color: '#fff', px: 1, py: 0.2, borderRadius: 10 }}>
-                {unreadCount} новых
+                {t('notifications.newCount', { count: unreadCount })}
               </Typography>
             )}
           </Box>
@@ -115,7 +115,7 @@ export default function NotificationsPopover() {
               onClick={() => markAllAsReadMutation.mutate()}
               sx={{ textTransform: 'none', fontSize: '0.8rem' }}
             >
-              Прочитать все
+              {t('notifications.markAllRead')}
             </Button>
           )}
         </Box>
@@ -131,7 +131,7 @@ export default function NotificationsPopover() {
             <Box sx={{ py: 6, textAlign: 'center' }}>
               <NotificationsNone sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Уведомлений пока нет
+                {t('notifications.empty')}
               </Typography>
             </Box>
           ) : (
@@ -183,7 +183,7 @@ export default function NotificationsPopover() {
                           component="span"
                           sx={{ color: 'text.disabled', fontSize: '0.7rem', display: 'block', mt: 0.5 }}
                         >
-                          {new Date(item.createdAt).toLocaleString('ru-RU', {
+                          {new Date(item.createdAt).toLocaleString(i18n.language, {
                             day: 'numeric',
                             month: 'short',
                             hour: '2-digit',

@@ -32,6 +32,7 @@ import {
   SyncAlt,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { requestsApi } from '../api/requestsApi';
 import { useAuth } from '../../auth/context/AuthContext';
 import type {
@@ -41,22 +42,23 @@ import type {
   RequestType,
 } from '../../../shared/types/request';
 
-const typeLabels: Record<RequestType, { label: string; icon: React.ReactNode; color: string }> = {
-  VACATION: { label: 'Оплачиваемый отпуск', icon: <BeachAccess fontSize="small" />, color: '#0284c7' },
-  ADVANCE: { label: 'Аванс по зарплате', icon: <AttachMoney fontSize="small" />, color: '#059669' },
-  SICK_LEAVE: { label: 'Больничный лист', icon: <LocalHospital fontSize="small" />, color: '#d97706' },
-  OTHER: { label: 'Прочее обращение', icon: <HelpOutlined fontSize="small" />, color: '#64748b' },
+const typeLabels = {
+  VACATION: { labelKey: 'requests.typeVacation', icon: <BeachAccess fontSize="small" />, color: '#0284c7' },
+  ADVANCE: { labelKey: 'requests.typeAdvance', icon: <AttachMoney fontSize="small" />, color: '#059669' },
+  SICK_LEAVE: { labelKey: 'requests.typeSickLeave', icon: <LocalHospital fontSize="small" />, color: '#d97706' },
+  OTHER: { labelKey: 'requests.typeOther', icon: <HelpOutlined fontSize="small" />, color: '#64748b' },
 };
 
-const statusConfig: Record<RequestStatus, { label: string; color: 'warning' | 'success' | 'error' | 'default' }> = {
-  PENDING: { label: 'На согласовании', color: 'warning' },
-  APPROVED: { label: 'Согласовано', color: 'success' },
-  REJECTED: { label: 'Отклонено', color: 'error' },
-  DRAFT: { label: 'Черновик', color: 'default' },
+const statusConfig: Record<RequestStatus, { labelKey: string; color: 'warning' | 'success' | 'error' | 'default' }> = {
+  PENDING: { labelKey: 'requests.statusPending', color: 'warning' },
+  APPROVED: { labelKey: 'requests.statusApproved', color: 'success' },
+  REJECTED: { labelKey: 'requests.statusRejected', color: 'error' },
+  DRAFT: { labelKey: 'requests.statusDraft', color: 'default' },
 };
 
 export default function RequestsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const isManagerOrHr =
     user?.role === 'HR' ||
@@ -71,7 +73,6 @@ export default function RequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<HrRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Form State
   const [requestType, setRequestType] = useState<RequestType>('VACATION');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -79,7 +80,6 @@ export default function RequestsPage() {
   const [comment, setComment] = useState('');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // Queries
   const { data: myRequests = [], isLoading: isLoadingMy } = useQuery({
     queryKey: ['requests', 'my'],
     queryFn: requestsApi.getMyRequests,
@@ -91,7 +91,6 @@ export default function RequestsPage() {
     enabled: isManagerOrHr,
   });
 
-  // Mutations
   const createMutation = useMutation({
     mutationFn: (payload: HrRequestCreateRequest) => requestsApi.create(payload),
     onSuccess: () => {
@@ -99,7 +98,7 @@ export default function RequestsPage() {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       setCreateDialogOpen(false);
       resetForm();
-      setActionSuccess('Заявка успешно создана и отправлена руководителю на согласование');
+      setActionSuccess(t('requests.successCreated'));
     },
   });
 
@@ -112,7 +111,7 @@ export default function RequestsPage() {
       setReviewDialogOpen(false);
       setSelectedRequest(null);
       setRejectionReason('');
-      setActionSuccess('Статус заявки обновлен. Mock-интеграция 1С и Documentolog выполнена');
+      setActionSuccess(t('requests.successUpdated'));
     },
   });
 
@@ -140,7 +139,6 @@ export default function RequestsPage() {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 1, md: 2 } }}>
-      {/* Header */}
       <Box
         sx={{
           display: 'flex',
@@ -153,10 +151,10 @@ export default function RequestsPage() {
       >
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 800 }}>
-            HR-Сервис: Заявки сотрудников
+            {t('requests.pageTitle')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Оформление отпусков, авансов и справок с интеграцией в 1С:ЗУП и Documentolog
+            {t('requests.pageSubtitle')}
           </Typography>
         </Box>
 
@@ -173,20 +171,11 @@ export default function RequestsPage() {
             px: 2.5,
           }}
         >
-          Подать новую заявку
+          {t('requests.submitNew')}
         </Button>
       </Box>
 
-      {/* Integration Banner */}
-      <Card
-        sx={{
-          mb: 3,
-          p: 2,
-          bgcolor: '#f0fdf4',
-          border: '1px solid #bbf7d0',
-          borderRadius: 2,
-        }}
-      >
+      <Card sx={{ mb: 3, p: 2, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 2 }}>
         <Box
           sx={{
             display: 'flex',
@@ -200,10 +189,10 @@ export default function RequestsPage() {
             <SyncAlt sx={{ color: '#16a34a' }} />
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#166534' }}>
-                Активная интеграционная шина JanaPost
+                {t('requests.integrationTitle')}
               </Typography>
               <Typography variant="caption" sx={{ color: '#15803d' }}>
-                Все согласованные заявки автоматически передаются в расчетный контур 1С:ЗУП и систему ЭДО Documentolog.
+                {t('requests.integrationSubtitle')}
               </Typography>
             </Box>
           </Box>
@@ -220,7 +209,6 @@ export default function RequestsPage() {
         </Alert>
       )}
 
-      {/* Tabs */}
       <Tabs
         value={activeTab}
         onChange={(_, val) => setActiveTab(val)}
@@ -231,16 +219,15 @@ export default function RequestsPage() {
           '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 },
         }}
       >
-        <Tab label={`Мои заявки (${myRequests.length})`} value="my" />
+        <Tab label={`${t('requests.myRequests')} (${myRequests.length})`} value="my" />
         {isManagerOrHr && (
           <Tab
-            label={`Входящие на согласование (${allRequests.filter((r) => r.status === 'PENDING').length})`}
+            label={`${t('requests.incomingApprovals')} (${allRequests.filter((r) => r.status === 'PENDING').length})`}
             value="approvals"
           />
         )}
       </Tabs>
 
-      {/* Content */}
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
           <CircularProgress />
@@ -249,15 +236,11 @@ export default function RequestsPage() {
         <Card sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
           <HourglassEmpty sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary">
-            {activeTab === 'my' ? 'У вас пока нет созданных заявок' : 'Нет заявок, требующих вашего согласования'}
+            {activeTab === 'my' ? t('requests.emptyMy') : t('requests.emptyApprovals')}
           </Typography>
           {activeTab === 'my' && (
-            <Button
-              variant="outlined"
-              sx={{ mt: 2, textTransform: 'none' }}
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              Создать первую заявку
+            <Button variant="outlined" sx={{ mt: 2, textTransform: 'none' }} onClick={() => setCreateDialogOpen(true)}>
+              {t('requests.createFirst')}
             </Button>
           )}
         </Card>
@@ -309,41 +292,34 @@ export default function RequestsPage() {
                         <Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                              {typeInfo.label}
+                              {t(typeInfo.labelKey)}
                             </Typography>
-                            <Chip
-                              label={statusInfo.label}
-                              color={statusInfo.color}
-                              size="small"
-                              sx={{ fontWeight: 600, height: 24 }}
-                            />
+                            <Chip label={t(statusInfo.labelKey)} color={statusInfo.color} size="small" sx={{ fontWeight: 600, height: 24 }} />
                           </Box>
                           <Typography variant="caption" color="text.secondary">
-                            Сотрудник: <b>{req.employeeName}</b> • Создана: {new Date(req.createdAt).toLocaleDateString('ru-RU')}
+                            {t('requests.employeeLabel')} <b>{req.employeeName}</b> • {t('requests.createdLabel')} {new Date(req.createdAt).toLocaleDateString()}
                           </Typography>
                         </Box>
                       </Box>
 
-                      {/* Request Details */}
                       <Box sx={{ minWidth: 200 }}>
                         {req.startDate && (
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            Период: {req.startDate} — {req.endDate || '...'} ({req.durationDays ?? '—'} дн.)
+                            {t('requests.period')} {req.startDate} — {req.endDate || '...'} ({req.durationDays ?? '—'} {t('requests.daysShort')})
                           </Typography>
                         )}
                         {req.amount && (
                           <Typography variant="body2" sx={{ fontWeight: 600, color: '#059669' }}>
-                            Сумма: {req.amount.toLocaleString('ru-RU')} ₸
+                            {t('requests.amount')} {req.amount.toLocaleString()} ₸
                           </Typography>
                         )}
                         {req.comment && (
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                            Комментарий: «{req.comment}»
+                            {t('requests.comment')} «{req.comment}»
                           </Typography>
                         )}
                       </Box>
 
-                      {/* Actions / Status Review Info */}
                       <Box>
                         {req.status === 'PENDING' && isManagerOrHr && activeTab === 'approvals' ? (
                           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -356,7 +332,7 @@ export default function RequestsPage() {
                               disabled={reviewMutation.isPending}
                               sx={{ textTransform: 'none', fontWeight: 600 }}
                             >
-                              Согласовать
+                              {t('requests.approve')}
                             </Button>
                             <Button
                               variant="outlined"
@@ -369,22 +345,22 @@ export default function RequestsPage() {
                               disabled={reviewMutation.isPending}
                               sx={{ textTransform: 'none', fontWeight: 600 }}
                             >
-                              Отклонить
+                              {t('requests.reject')}
                             </Button>
                           </Box>
                         ) : req.reviewedBy ? (
                           <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                              Проверил: {req.reviewerName || 'Руководитель'}
+                              {t('requests.reviewedBy')} {req.reviewerName || t('requests.managerDefault')}
                             </Typography>
                             {req.rejectionReason && (
                               <Typography variant="caption" color="error" sx={{ display: 'block' }}>
-                                Причина: {req.rejectionReason}
+                                {t('requests.reason')} {req.rejectionReason}
                               </Typography>
                             )}
                           </Box>
                         ) : (
-                          <Chip label="Ожидает рассмотрения" size="small" variant="outlined" />
+                          <Chip label={t('requests.pendingReview')} size="small" variant="outlined" />
                         )}
                       </Box>
                     </Box>
@@ -396,108 +372,65 @@ export default function RequestsPage() {
         </Grid>
       )}
 
-      {/* Create Dialog */}
       <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
         <Box component="form" onSubmit={handleCreateSubmit}>
-          <DialogTitle sx={{ fontWeight: 700 }}>Оформление заявки в HR</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 700 }}>{t('requests.dialogCreateTitle')}</DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
               <FormControl fullWidth>
-                <InputLabel>Тип заявки</InputLabel>
-                <Select
-                  value={requestType}
-                  label="Тип заявки"
-                  onChange={(e) => setRequestType(e.target.value as RequestType)}
-                >
-                  <MenuItem value="VACATION">Оплачиваемый трудовой отпуск</MenuItem>
-                  <MenuItem value="ADVANCE">Аванс по заработной плате</MenuItem>
-                  <MenuItem value="SICK_LEAVE">Больничный лист</MenuItem>
-                  <MenuItem value="OTHER">Прочее заявление</MenuItem>
+                <InputLabel>{t('requests.requestType')}</InputLabel>
+                <Select value={requestType} label={t('requests.requestType')} onChange={(e) => setRequestType(e.target.value as RequestType)}>
+                  <MenuItem value="VACATION">{t('requests.typeVacation')}</MenuItem>
+                  <MenuItem value="ADVANCE">{t('requests.typeAdvance')}</MenuItem>
+                  <MenuItem value="SICK_LEAVE">{t('requests.typeSickLeave')}</MenuItem>
+                  <MenuItem value="OTHER">{t('requests.typeOther')}</MenuItem>
                 </Select>
               </FormControl>
 
               {(requestType === 'VACATION' || requestType === 'SICK_LEAVE') && (
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    label="Дата начала"
-                    type="date"
-                    fullWidth
-                    slotProps={{ inputLabel: { shrink: true } }}
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
-                  />
-                  <TextField
-                    label="Дата окончания"
-                    type="date"
-                    fullWidth
-                    slotProps={{ inputLabel: { shrink: true } }}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    required
-                  />
+                  <TextField label={t('requests.startDate')} type="date" fullWidth slotProps={{ inputLabel: { shrink: true } }} value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+                  <TextField label={t('requests.endDate')} type="date" fullWidth slotProps={{ inputLabel: { shrink: true } }} value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
                 </Box>
               )}
 
               {requestType === 'ADVANCE' && (
-                <TextField
-                  label="Запрашиваемая сумма аванса (в тенге ₸)"
-                  type="number"
-                  fullWidth
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                  required
-                />
+                <TextField label={t('requests.advanceAmount')} type="number" fullWidth value={amount} onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))} required />
               )}
 
               <TextField
-                label="Комментарий / Обоснование"
+                label={t('requests.commentLabel')}
                 multiline
                 rows={3}
                 fullWidth
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Укажите дополнительную информацию при необходимости..."
+                placeholder={t('requests.commentPlaceholder')}
               />
             </Box>
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>
             <Button onClick={() => setCreateDialogOpen(false)} color="inherit">
-              Отмена
+              {t('requests.cancel')}
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={createMutation.isPending}
-              sx={{ bgcolor: '#2563eb', textTransform: 'none', fontWeight: 600 }}
-            >
-              {createMutation.isPending ? 'Отправка...' : 'Отправить заявку'}
+            <Button type="submit" variant="contained" disabled={createMutation.isPending} sx={{ bgcolor: '#2563eb', textTransform: 'none', fontWeight: 600 }}>
+              {createMutation.isPending ? t('requests.sending') : t('requests.sendRequest')}
             </Button>
           </DialogActions>
         </Box>
       </Dialog>
 
-      {/* Reject Reason Dialog */}
       <Dialog open={reviewDialogOpen} onClose={() => setReviewDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Отклонение заявки</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t('requests.rejectDialogTitle')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Укажите причину отклонения для сотрудника:
+            {t('requests.rejectDialogSubtitle')}
           </Typography>
-          <TextField
-            autoFocus
-            fullWidth
-            multiline
-            rows={3}
-            label="Причина отказа"
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            required
-          />
+          <TextField autoFocus fullWidth multiline rows={3} label={t('requests.rejectReason')} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} required />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setReviewDialogOpen(false)} color="inherit">
-            Отмена
+            {t('requests.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -514,7 +447,7 @@ export default function RequestsPage() {
             disabled={!rejectionReason || reviewMutation.isPending}
             sx={{ textTransform: 'none', fontWeight: 600 }}
           >
-            Отклонить заявку
+            {t('requests.rejectRequest')}
           </Button>
         </DialogActions>
       </Dialog>

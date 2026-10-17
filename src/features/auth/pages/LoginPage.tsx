@@ -17,20 +17,22 @@ import {
   VisibilityOutlined,
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 import SocialLoginButtons from '../components/SocialLoginButtons';
 
 const demoAccounts = [
-  { label: 'Сотрудник', email: 'employee@janapost.kz', pass: 'empl1234' },
-  { label: 'HR', email: 'hr@janapost.kz', pass: 'hr123456' },
-  { label: 'Директор', email: 'director@janapost.kz', pass: 'dir12345' },
-  { label: 'Admin', email: 'admin@janapost.kz', pass: 'admin123' },
+  { labelKey: 'auth.employee', email: 'employee@janapost.kz', pass: 'empl1234' },
+  { labelKey: 'auth.hr', email: 'hr@janapost.kz', pass: 'hr123456' },
+  { labelKey: 'auth.director', email: 'director@janapost.kz', pass: 'dir12345' },
+  { labelKey: 'auth.admin', email: 'admin@janapost.kz', pass: 'admin123' },
 ];
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('employee@janapost.kz');
   const [password, setPassword] = useState('empl1234');
@@ -61,16 +63,13 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout
-      illustrationSrc="/auth/login-illustration.png"
-      illustrationAlt="Login Illustration"
-    >
+    <AuthLayout illustrationSrc="/auth/login-illustration.png" illustrationAlt="Login Illustration">
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827', mb: 0.5, fontSize: '1.75rem' }}>
-          Sign In
+          {t('auth.signIn')}
         </Typography>
         <Typography variant="body2" sx={{ color: '#6B7280', fontSize: '0.9rem' }}>
-          Please enter your details to sign in
+          {t('auth.signInSubtitle')}
         </Typography>
       </Box>
 
@@ -80,16 +79,15 @@ export default function LoginPage() {
         </Alert>
       )}
 
-      {/* Form */}
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Box sx={{ mb: 2.5 }}>
           <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', display: 'block', mb: 0.8 }}>
-            Email Address
+            {t('auth.email')}
           </Typography>
           <TextField
             fullWidth
             type="email"
-            placeholder="Enter your email"
+            placeholder={t('auth.placeholderEmail')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -116,12 +114,12 @@ export default function LoginPage() {
 
         <Box sx={{ mb: 2 }}>
           <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', display: 'block', mb: 0.8 }}>
-            Password
+            {t('auth.password')}
           </Typography>
           <TextField
             fullWidth
             type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
+            placeholder={t('auth.placeholderPassword')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -156,7 +154,6 @@ export default function LoginPage() {
           />
         </Box>
 
-        {/* Remember Me & Forgot Password */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <FormControlLabel
             control={
@@ -170,11 +167,7 @@ export default function LoginPage() {
                 }}
               />
             }
-            label={
-              <Typography variant="body2" sx={{ color: '#4B5563', fontSize: '0.85rem' }}>
-                Remember Me
-              </Typography>
-            }
+            label={<Typography variant="body2" sx={{ color: '#4B5563', fontSize: '0.85rem' }}>{t('auth.rememberMe')}</Typography>}
           />
 
           <Typography
@@ -189,11 +182,10 @@ export default function LoginPage() {
               '&:hover': { textDecoration: 'underline' },
             }}
           >
-            Forgot Password?
+            {t('auth.forgotPassword')}
           </Typography>
         </Box>
 
-        {/* Submit Button */}
         <Button
           type="submit"
           fullWidth
@@ -211,13 +203,12 @@ export default function LoginPage() {
             boxShadow: 'none',
           }}
         >
-          {isSubmitting ? 'Signing In...' : 'Sign In'}
+          {isSubmitting ? t('auth.signingIn') : t('auth.signIn')}
         </Button>
 
-        {/* Register Link */}
         <Box sx={{ textAlign: 'center', mt: 2.5 }}>
           <Typography variant="body2" sx={{ color: '#6B7280', fontSize: '0.875rem' }}>
-            Don't have an account?{' '}
+            {t('auth.registerPrompt')}{' '}
             <Typography
               component={Link}
               to="/register"
@@ -229,18 +220,16 @@ export default function LoginPage() {
                 '&:hover': { textDecoration: 'underline' },
               }}
             >
-              Create Account
+              {t('auth.createAccount')}
             </Typography>
           </Typography>
         </Box>
 
-        {/* Social Login Buttons */}
         <SocialLoginButtons />
 
-        {/* Quick Demo Switcher for Jury */}
         <Box sx={{ mt: 3, pt: 2.5, borderTop: '1px dashed #E5E7EB', textAlign: 'center' }}>
           <Typography variant="caption" sx={{ color: '#9CA3AF', fontWeight: 600, display: 'block', mb: 1 }}>
-            Демо-аккаунты для проверки жюри:
+            {t('auth.demoAccounts')}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 0.8 }}>
             {demoAccounts.map((acc) => {
@@ -248,7 +237,7 @@ export default function LoginPage() {
               return (
                 <Chip
                   key={acc.email}
-                  label={acc.label}
+                  label={t(acc.labelKey)}
                   size="small"
                   onClick={() => handleSelectDemo(acc.email, acc.pass)}
                   clickable

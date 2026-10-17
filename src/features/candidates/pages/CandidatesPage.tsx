@@ -2,10 +2,12 @@ import { Box, Button, Card, CardContent, Grid, MenuItem, TextField, Typography }
 import AddIcon from '@mui/icons-material/Add';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { candidatesApi } from '../api/candidatesApi';
 import CandidateBoard from '../components/CandidateBoard';
 
 export default function CandidatesPage() {
+  const { t } = useTranslation();
   const [vacancyId, setVacancyId] = useState('1');
 
   const vacancyNumber = useMemo(() => Number(vacancyId || 1), [vacancyId]);
@@ -19,10 +21,10 @@ export default function CandidatesPage() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Candidates
+          {t('candidates.pageTitle')}
         </Typography>
         <Button variant="contained" startIcon={<AddIcon />}>
-          Add candidate
+          {t('candidates.addCandidate')}
         </Button>
       </Box>
 
@@ -33,7 +35,7 @@ export default function CandidatesPage() {
               <TextField
                 fullWidth
                 select
-                label="Vacancy"
+                label={t('candidates.vacancy')}
                 value={vacancyId}
                 onChange={(event) => setVacancyId(event.target.value)}
               >
@@ -46,11 +48,7 @@ export default function CandidatesPage() {
         </CardContent>
       </Card>
 
-      {isLoading ? (
-        <Typography>Loading candidates...</Typography>
-      ) : (
-        <CandidateBoard candidates={data || []} />
-      )}
+      {isLoading ? <Typography>{t('candidates.loading')}</Typography> : <CandidateBoard candidates={data || []} />}
     </Box>
   );
 }

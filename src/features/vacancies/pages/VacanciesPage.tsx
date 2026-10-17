@@ -11,12 +11,14 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { vacanciesApi } from '../api/vacanciesApi';
 import VacanciesList from '../components/VacanciesList';
 
 const vacancyStatuses = ['OPEN', 'CLOSED', 'ON_HOLD'];
 
 export default function VacanciesPage() {
+  const { t } = useTranslation();
   const [status, setStatus] = useState('');
   const [city, setCity] = useState('');
 
@@ -39,10 +41,10 @@ export default function VacanciesPage() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Vacancies
+          {t('vacancies.pageTitle')}
         </Typography>
         <Button variant="contained" startIcon={<AddIcon />}>
-          Add vacancy
+          {t('vacancies.addVacancy')}
         </Button>
       </Box>
 
@@ -53,11 +55,11 @@ export default function VacanciesPage() {
               <TextField
                 fullWidth
                 select
-                label="Status"
+                label={t('vacancies.status')}
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
-                <MenuItem value="">All</MenuItem>
+                <MenuItem value="">{t('vacancies.all')}</MenuItem>
                 {vacancyStatuses.map((item) => (
                   <MenuItem key={item} value={item}>
                     {item}
@@ -69,7 +71,7 @@ export default function VacanciesPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
-                label="City"
+                label={t('vacancies.city')}
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
               />
@@ -78,11 +80,7 @@ export default function VacanciesPage() {
         </CardContent>
       </Card>
 
-      {isLoading ? (
-        <Typography>Loading vacancies...</Typography>
-      ) : (
-        <VacanciesList vacancies={data?.content || []} />
-      )}
+      {isLoading ? <Typography>{t('vacancies.loading')}</Typography> : <VacanciesList vacancies={data?.content || []} />}
     </Box>
   );
 }

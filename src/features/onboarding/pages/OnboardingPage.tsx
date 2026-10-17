@@ -1,9 +1,11 @@
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { onboardingApi } from '../api/onboardingApi';
 import OnboardingChecklistCard from '../components/OnboardingChecklist';
 
 export default function OnboardingPage() {
+  const { t } = useTranslation();
   const { data: templates, isLoading: loadingTemplates } = useQuery({
     queryKey: ['onboarding-templates'],
     queryFn: onboardingApi.getTemplates,
@@ -18,7 +20,7 @@ export default function OnboardingPage() {
   return (
     <Box>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Onboarding
+        {t('onboarding.pageTitle')}
       </Typography>
 
       <Grid container spacing={3}>
@@ -26,11 +28,11 @@ export default function OnboardingPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Templates
+                {t('onboarding.templates')}
               </Typography>
 
               {loadingTemplates ? (
-                <Typography>Loading templates...</Typography>
+                <Typography>{t('onboarding.loadingTemplates')}</Typography>
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   {(templates || []).map((template) => (
@@ -40,7 +42,7 @@ export default function OnboardingPage() {
                           {template.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {template.items.length} items
+                          {t('onboarding.itemsCount', { count: template.items.length })}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -55,7 +57,7 @@ export default function OnboardingPage() {
           {loadingChecklist ? (
             <Card>
               <CardContent>
-                <Typography>Loading checklist...</Typography>
+                <Typography>{t('onboarding.loadingChecklist')}</Typography>
               </CardContent>
             </Card>
           ) : checklist ? (
@@ -63,7 +65,7 @@ export default function OnboardingPage() {
           ) : (
             <Card>
               <CardContent>
-                <Typography>No checklist assigned.</Typography>
+                <Typography>{t('onboarding.noChecklistAssigned')}</Typography>
               </CardContent>
             </Card>
           )}

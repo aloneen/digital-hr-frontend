@@ -10,6 +10,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { Employee } from '../../../shared/types/employee';
 
 const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
@@ -19,17 +20,19 @@ const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
 };
 
 export default function EmployeesTable({ rows }: { rows: Employee[] }) {
+  const { t } = useTranslation();
+
   return (
     <TableContainer component={Paper} sx={{ border: '1px solid rgba(15, 23, 42, 0.08)' }}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Employee</TableCell>
-            <TableCell>Position</TableCell>
-            <TableCell>Department</TableCell>
-            <TableCell>City</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Hire date</TableCell>
+            <TableCell>{t('employees.table.employee')}</TableCell>
+            <TableCell>{t('employees.table.position')}</TableCell>
+            <TableCell>{t('employees.table.department')}</TableCell>
+            <TableCell>{t('employees.table.city')}</TableCell>
+            <TableCell>{t('employees.table.status')}</TableCell>
+            <TableCell>{t('employees.table.hireDate')}</TableCell>
           </TableRow>
         </TableHead>
 
@@ -42,7 +45,7 @@ export default function EmployeesTable({ rows }: { rows: Employee[] }) {
                     {employee.firstName} {employee.lastName}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {employee.email || 'No email'}
+                    {employee.email || t('employees.noEmail')}
                   </Typography>
                 </Box>
               </TableCell>
@@ -52,7 +55,11 @@ export default function EmployeesTable({ rows }: { rows: Employee[] }) {
               <TableCell>{employee.city || '—'}</TableCell>
 
               <TableCell>
-                <Chip label={employee.status} color={statusColor[employee.status] || 'default'} size="small" />
+                <Chip
+                  label={t(`employees.statuses.${employee.status.toLowerCase()}`)}
+                  color={statusColor[employee.status] || 'default'}
+                  size="small"
+                />
               </TableCell>
 
               <TableCell>{employee.hireDate || '—'}</TableCell>

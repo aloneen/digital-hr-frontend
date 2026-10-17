@@ -1,4 +1,5 @@
 import { Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { Candidate } from '../../../shared/types/candidate';
 
 const stages = ['NEW', 'SCREENING', 'INTERVIEW', 'OFFER', 'HIRED', 'REJECTED'] as const;
@@ -12,7 +13,18 @@ const stageColor: Record<string, 'default' | 'primary' | 'success' | 'warning' |
   REJECTED: 'error',
 };
 
+const stageLabelMap: Record<string, string> = {
+  NEW: 'new',
+  SCREENING: 'screening',
+  INTERVIEW: 'interview',
+  OFFER: 'offer',
+  HIRED: 'hired',
+  REJECTED: 'rejected',
+};
+
 export default function CandidateBoard({ candidates }: { candidates: Candidate[] }) {
+  const { t } = useTranslation();
+
   return (
     <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
       {stages.map((stage) => {
@@ -22,7 +34,7 @@ export default function CandidateBoard({ candidates }: { candidates: Candidate[]
           <Box key={stage} sx={{ minWidth: 260, flex: 1 }}>
             <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                {stage}
+                {t(`candidates.stages.${stageLabelMap[stage]}`)}
               </Typography>
               <Chip label={filtered.length} size="small" color={stageColor[stage] || 'default'} />
             </Box>
@@ -32,7 +44,7 @@ export default function CandidateBoard({ candidates }: { candidates: Candidate[]
                 <Card sx={{ opacity: 0.7 }}>
                   <CardContent>
                     <Typography variant="body2" color="text.secondary">
-                      No candidates
+                      {t('candidates.noCandidates')}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -44,10 +56,10 @@ export default function CandidateBoard({ candidates }: { candidates: Candidate[]
                         {candidate.firstName} {candidate.lastName}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {candidate.email || 'No email'}
+                        {candidate.email || t('candidates.noEmail')}
                       </Typography>
                       <Box sx={{ mt: 1.5 }}>
-                        <Chip label={candidate.stage} size="small" color={stageColor[candidate.stage] || 'default'} />
+                        <Chip label={t(`candidates.stages.${stageLabelMap[candidate.stage]}`)} size="small" color={stageColor[candidate.stage] || 'default'} />
                       </Box>
                     </CardContent>
                   </Card>

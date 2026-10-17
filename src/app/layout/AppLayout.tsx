@@ -14,6 +14,8 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  MenuItem,
+  Select,
   Toolbar,
   Typography,
 } from '@mui/material';
@@ -32,69 +34,116 @@ import {
   Work,
 } from '@mui/icons-material';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../features/auth/context/AuthContext';
 import NotificationsPopover from '../../features/notifications/components/NotificationsPopover';
 
-type MenuItem = {
+type NavMenuItem = {
   label: string;
   to: string;
   icon: React.ReactNode;
-  roles?: string[];
 };
 
-const employeeMenuItems: MenuItem[] = [
-  { label: 'Личный кабинет', to: '/profile', icon: <AccountCircle /> },
-  { label: 'Мои заявки & Отпуска', to: '/requests', icon: <Assignment /> },
-  { label: 'Jana Academy (LMS)', to: '/academy', icon: <School /> },
-  { label: 'AI Jana Ассистент', to: '/ai-assistant', icon: <Psychology /> },
+const employeeMenuItems: NavMenuItem[] = [
+  { label: 'nav.profile', to: '/profile', icon: <AccountCircle /> },
+  { label: 'nav.requests', to: '/requests', icon: <Assignment /> },
+  { label: 'nav.academy', to: '/academy', icon: <School /> },
+  { label: 'nav.aiAssistant', to: '/ai-assistant', icon: <Psychology /> },
 ];
 
-const hrMenuItems: MenuItem[] = [
-  { label: 'Дашборд HR', to: '/dashboard', icon: <BarChart /> },
-  { label: 'Сотрудники', to: '/employees', icon: <Groups /> },
-  { label: 'Структура компании', to: '/departments', icon: <Business /> },
-  { label: 'Вакансии', to: '/vacancies', icon: <Work /> },
-  { label: 'Кандидаты & Найм', to: '/candidates', icon: <Person /> },
-  { label: 'Онбординг', to: '/onboarding', icon: <School /> },
-  { label: 'HR-Аналитика', to: '/analytics', icon: <Analytics /> },
+const hrMenuItems: NavMenuItem[] = [
+  { label: 'nav.dashboard', to: '/dashboard', icon: <BarChart /> },
+  { label: 'nav.employees', to: '/employees', icon: <Groups /> },
+  { label: 'nav.departments', to: '/departments', icon: <Business /> },
+  { label: 'nav.vacancies', to: '/vacancies', icon: <Work /> },
+  { label: 'nav.candidates', to: '/candidates', icon: <Person /> },
+  { label: 'nav.onboarding', to: '/onboarding', icon: <School /> },
+  { label: 'nav.analytics', to: '/analytics', icon: <Analytics /> },
 ];
 
-const drawerWidth = 260;
+const drawerWidth = 272;
 
 export default function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isHrOrAdmin = useMemo(() => {
     const role = user?.role;
-    return (
-      role === 'HR' ||
-      role === 'SUPER_ADMIN' ||
-      role === 'DIRECTOR' ||
-      role === 'CITY_MANAGER' ||
-      role === 'FRANCHISE_OWNER'
-    );
+    return ['HR', 'SUPER_ADMIN', 'DIRECTOR', 'CITY_MANAGER', 'FRANCHISE_OWNER'].includes(role ?? '');
   }, [user?.role]);
 
   const allItems = useMemo(() => [...employeeMenuItems, ...hrMenuItems], []);
 
   const pageTitle = useMemo(() => {
     const current = allItems.find((item) => item.to === location.pathname);
-    return current?.label ?? 'Личный кабинет';
-  }, [allItems, location.pathname]);
+    return t(current?.label ?? 'nav.profile');
+  }, [allItems, location.pathname, t]);
+
+  const handleLanguageChange = (value: string) => {
+    void i18n.changeLanguage(value);
+    localStorage.setItem('digital-hr-language', value);
+  };
+
+  const renderMenuItems = (items: NavMenuItem[]) =>
+    items.map((item) => {
+      const isActive = location.pathname === item.to;
+
+      return (
+        <ListItem key={item.to} disablePadding sx={{ mb: 0.25 }}>
+          <ListItemButton
+            component={Link}
+            to={item.to}
+            selected={isActive}
+            sx={{
+              borderRadius: 2,
+              py: 1.1,
+              px: 1.25,
+              color: isActive ? 'primary.main' : '#1f2937',
+              '&.Mui-selected': {
+                background: 'linear-gradient(90deg, rgba(255, 106, 61, 0.12) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                color: 'primary.main',
+                '& .MuiListItemIcon-root': { color: 'primary.main' },
+              },
+              '&:hover': { backgroundColor: 'rgba(15, 23, 42, 0.02)' },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 38, color: isActive ? 'primary.main' : '#64748b' }}>{item.icon}</ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography sx={{ fontSize: '0.9rem', fontWeight: isActive ? 700 : 600 }}>
+                  {t(item.label)}
+                </Typography>
+              }
+            />
+          </ListItemButton>
+        </ListItem>
+      );
+    });
 
   const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Toolbar sx={{ px: 2 }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+      <Toolbar sx={{ px: 2.25, py: 1.75 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.5 }}>
-          <Avatar sx={{ width: 36, height: 36, bgcolor: '#2563eb', fontWeight: 800 }}>J</Avatar>
+          <Avatar
+            sx={{
+              width: 38,
+              height: 38,
+              background: 'linear-gradient(135deg, #ff6a3d 0%, #ff8d68 100%)',
+              color: '#fff',
+              fontWeight: 800,
+              boxShadow: '0 12px 22px rgba(255, 106, 61, 0.24)',
+            }}
+          >
+            J
+          </Avatar>
           <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
               JanaPost HR
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Единая платформа
+              {t('nav.unifiedPlatform')}
             </Typography>
           </Box>
         </Box>
@@ -102,61 +151,29 @@ export default function AppLayout() {
 
       <Divider />
 
-      <Box sx={{ flex: 1, overflowY: 'auto', px: 1, py: 1.5 }}>
-        {/* Employee Section */}
+      <Box sx={{ flex: 1, overflowY: 'auto', px: 1.25, py: 1.75 }}>
         <List
           subheader={
             <ListSubheader
               sx={{
                 bgcolor: 'transparent',
                 lineHeight: '28px',
-                fontSize: '0.75rem',
-                fontWeight: 700,
+                fontSize: '0.68rem',
+                fontWeight: 800,
                 color: 'text.secondary',
                 textTransform: 'uppercase',
-                letterSpacing: 0.5,
+                letterSpacing: '0.08em',
+                px: 1.25,
+                pb: 0.8,
               }}
             >
-              Сервисы сотрудника
+              {t('nav.employeeServices')}
             </ListSubheader>
           }
         >
-          {employeeMenuItems.map((item) => {
-            const isActive = location.pathname === item.to;
-
-            return (
-              <ListItem key={item.to} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  component={Link}
-                  to={item.to}
-                  selected={isActive}
-                  sx={{
-                    borderRadius: 2,
-                    py: 1,
-                    '&.Mui-selected': {
-                      backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                      color: 'primary.main',
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.main',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography sx={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 500 }}>
-                        {item.label}
-                      </Typography>
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
+          {renderMenuItems(employeeMenuItems)}
         </List>
 
-        {/* HR / Admin Section */}
         {isHrOrAdmin && (
           <>
             <Divider sx={{ my: 1.5 }} />
@@ -166,67 +183,33 @@ export default function AppLayout() {
                   sx={{
                     bgcolor: 'transparent',
                     lineHeight: '28px',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
                     color: 'text.secondary',
                     textTransform: 'uppercase',
-                    letterSpacing: 0.5,
+                    letterSpacing: '0.08em',
+                    px: 1.25,
+                    pb: 0.8,
                   }}
                 >
-                  Управление и HR
+                  {t('nav.hrManagement')}
                 </ListSubheader>
               }
             >
-              {hrMenuItems.map((item) => {
-                const isActive = location.pathname === item.to;
-
-                return (
-                  <ListItem key={item.to} disablePadding sx={{ mb: 0.5 }}>
-                    <ListItemButton
-                      component={Link}
-                      to={item.to}
-                      selected={isActive}
-                      sx={{
-                        borderRadius: 2,
-                        py: 1,
-                        '&.Mui-selected': {
-                          backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                          color: 'primary.main',
-                          '& .MuiListItemIcon-root': {
-                            color: 'primary.main',
-                          },
-                        },
-                      }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Typography sx={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 500 }}>
-                            {item.label}
-                          </Typography>
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
+              {renderMenuItems(hrMenuItems)}
             </List>
           </>
         )}
       </Box>
 
-      {/* Footer Profile & Logout */}
-      <Box sx={{ p: 2, borderTop: '1px solid #e2e8f0', bgcolor: '#fafafa' }}>
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(148, 163, 184, 0.2)', bgcolor: '#f8fafc' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-          <Avatar sx={{ width: 34, height: 34, bgcolor: '#0f172a', fontSize: '0.875rem', fontWeight: 700 }}>
+          <Avatar sx={{ width: 34, height: 34, bgcolor: '#0f172a', fontSize: '0.85rem', fontWeight: 700 }}>
             {user?.email?.charAt(0).toUpperCase() ?? 'U'}
           </Avatar>
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography
-              variant="subtitle2"
-              sx={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.85rem' }}
-            >
-              {user?.email ?? 'User'}
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.85rem' }}>
+              {user?.email ?? t('common.user')}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {user?.role ?? 'EMPLOYEE'}
@@ -241,16 +224,23 @@ export default function AppLayout() {
           size="small"
           startIcon={<Logout />}
           onClick={logout}
-          sx={{ textTransform: 'none', borderRadius: 2 }}
+          sx={{
+            textTransform: 'none',
+            borderRadius: 2,
+            borderColor: 'rgba(148, 163, 184, 0.45)',
+            color: '#1f2937',
+            fontWeight: 700,
+            '&:hover': { borderColor: 'rgba(255, 106, 61, 0.5)', backgroundColor: 'rgba(255, 106, 61, 0.04)' },
+          }}
         >
-          Выйти из системы
+          {t('common.logout')}
         </Button>
       </Box>
     </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(180deg, #f5f7fb 0%, #eef5ff 100%)' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -258,43 +248,55 @@ export default function AppLayout() {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid #e2e8f0',
+          background: 'rgba(255,255,255,0.82)',
+          backdropFilter: 'blur(18px)',
+          borderBottom: '1px solid rgba(148, 163, 184, 0.2)',
           color: '#0f172a',
         }}
       >
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: 78 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <IconButton
-              color="inherit"
-              edge="start"
-              sx={{ mr: 1, display: { sm: 'none' } }}
-              onClick={() => setMobileOpen((prev) => !prev)}
-            >
+            <IconButton color="inherit" edge="start" sx={{ mr: 1, display: { sm: 'none' } }} onClick={() => setMobileOpen((prev) => !prev)}>
               <Menu />
             </IconButton>
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.15rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.15rem', letterSpacing: '-0.02em' }}>
               {pageTitle}
             </Typography>
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Notifications Center Bell with badge */}
+            <Select
+              size="small"
+              value={i18n.resolvedLanguage || 'ru'}
+              onChange={(event) => handleLanguageChange(event.target.value)}
+              sx={{
+                minWidth: 92,
+                height: 38,
+                borderRadius: 2,
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148, 163, 184, 0.3)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 106, 61, 0.4)' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#ff6a3d' },
+              }}
+            >
+              <MenuItem value="ru">RU</MenuItem>
+              <MenuItem value="en">EN</MenuItem>
+              <MenuItem value="kk">KK</MenuItem>
+            </Select>
+
             <NotificationsPopover />
 
             <Divider orientation="vertical" flexItem sx={{ my: 1.5, mx: 0.5 }} />
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box sx={{ textAlign: 'right', display: { xs: 'none', md: 'block' } }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                  {user?.email ?? 'User'}
+                <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                  {user?.email ?? t('common.user')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {user?.role ?? 'EMPLOYEE'}
                 </Typography>
               </Box>
-              <Avatar sx={{ width: 34, height: 34, bgcolor: '#2563eb', fontWeight: 600 }}>
+              <Avatar sx={{ width: 34, height: 34, bgcolor: 'linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%)', fontWeight: 700 }}>
                 {user?.email?.charAt(0).toUpperCase() ?? 'U'}
               </Avatar>
             </Box>
@@ -320,7 +322,7 @@ export default function AppLayout() {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: '1px solid #e2e8f0' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
           open
         >
@@ -335,7 +337,6 @@ export default function AppLayout() {
           p: { xs: 2, md: 3 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
-          backgroundColor: '#f8fafc',
         }}
       >
         <Toolbar />

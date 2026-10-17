@@ -9,6 +9,7 @@ import {
   TextField,
 } from '@mui/material';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EmployeeCreateRequest, EmployeeStatus } from '../../../shared/types/employee';
 
 const defaultValues: EmployeeCreateRequest = {
@@ -31,6 +32,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
   onClose: () => void;
   onSubmit: (payload: EmployeeCreateRequest) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<EmployeeCreateRequest>(defaultValues);
 
   const handleChange = <K extends keyof EmployeeCreateRequest>(field: K, value: EmployeeCreateRequest[K]) => {
@@ -52,12 +54,12 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Add employee</DialogTitle>
+      <DialogTitle>{t('employees.dialog.title')}</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ pt: 1 }}>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="First name"
+              label={t('employees.dialog.firstName')}
               fullWidth
               value={form.firstName}
               onChange={(e) => handleChange('firstName', e.target.value)}
@@ -65,7 +67,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Last name"
+              label={t('employees.dialog.lastName')}
               fullWidth
               value={form.lastName}
               onChange={(e) => handleChange('lastName', e.target.value)}
@@ -73,7 +75,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Middle name"
+              label={t('employees.dialog.middleName')}
               fullWidth
               value={form.middleName || ''}
               onChange={(e) => handleChange('middleName', e.target.value)}
@@ -82,7 +84,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
 
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Position"
+              label={t('employees.dialog.position')}
               fullWidth
               value={form.position}
               onChange={(e) => handleChange('position', e.target.value)}
@@ -90,7 +92,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Department ID"
+              label={t('employees.dialog.departmentId')}
               type="number"
               fullWidth
               value={form.departmentId}
@@ -99,7 +101,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="City"
+              label={t('employees.dialog.city')}
               fullWidth
               value={form.city || ''}
               onChange={(e) => handleChange('city', e.target.value)}
@@ -110,7 +112,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
             <TextField
               fullWidth
               select
-              label="Status"
+              label={t('employees.dialog.status')}
               value={form.status || 'ACTIVE'}
               onChange={(e) => handleChange('status', e.target.value as EmployeeStatus)}
             >
@@ -121,7 +123,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Hire date"
+              label={t('employees.dialog.hireDate')}
               type="date"
               fullWidth
               value={form.hireDate}
@@ -131,7 +133,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Birth date"
+              label={t('employees.dialog.birthDate')}
               type="date"
               fullWidth
               value={form.birthDate || ''}
@@ -142,7 +144,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
 
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Email"
+              label={t('employees.dialog.email')}
               fullWidth
               value={form.email || ''}
               onChange={(e) => handleChange('email', e.target.value)}
@@ -150,7 +152,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="Phone"
+              label={t('employees.dialog.phone')}
               fullWidth
               value={form.phone || ''}
               onChange={(e) => handleChange('phone', e.target.value)}
@@ -158,7 +160,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label="IIN"
+              label={t('employees.dialog.iin')}
               fullWidth
               value={form.iin || ''}
               onChange={(e) => handleChange('iin', e.target.value)}
@@ -167,9 +169,9 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>{t('employees.dialog.cancel')}</Button>
         <Button onClick={handleSave} variant="contained">
-          Save
+          {t('employees.dialog.save')}
         </Button>
       </DialogActions>
     </Dialog>

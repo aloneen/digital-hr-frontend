@@ -22,12 +22,15 @@ import {
   YAxis,
 } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { analyticsApi } from '../api/analyticsApi';
 
 const COLORS = ['#1f6feb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation();
+
   const { data: dashboard, isLoading: loadingDashboard } = useQuery({
     queryKey: ['analytics-dashboard'],
     queryFn: analyticsApi.getDashboard,
@@ -66,18 +69,18 @@ export default function AnalyticsPage() {
   return (
     <Box>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Analytics
+        {t('analytics.pageTitle')}
       </Typography>
 
       {loadingDashboard ? (
-        <Typography>Loading dashboard...</Typography>
+        <Typography>{t('analytics.loadingDashboard')}</Typography>
       ) : dashboard ? (
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
-                  Total employees
+                  {t('analytics.totalEmployees')}
                 </Typography>
                 <Typography variant="h4" sx={{ mt: 1, fontWeight: 700 }}>
                   {dashboard.totalEmployees}
@@ -90,7 +93,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
-                  Active employees
+                  {t('analytics.activeEmployees')}
                 </Typography>
                 <Typography variant="h4" sx={{ mt: 1, fontWeight: 700 }}>
                   {dashboard.activeEmployees}
@@ -103,7 +106,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
-                  Open vacancies
+                  {t('analytics.openVacancies')}
                 </Typography>
                 <Typography variant="h4" sx={{ mt: 1, fontWeight: 700 }}>
                   {dashboard.openVacancies}
@@ -116,7 +119,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
-                  Onboarding in progress
+                  {t('analytics.onboardingInProgress')}
                 </Typography>
                 <Typography variant="h4" sx={{ mt: 1, fontWeight: 700 }}>
                   {dashboard.onboardingInProgress}
@@ -132,10 +135,10 @@ export default function AnalyticsPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Headcount by city
+                {t('analytics.headcountByCity')}
               </Typography>
               {loadingHeadcount ? (
-                <Typography>Loading...</Typography>
+                <Typography>{t('analytics.loading')}</Typography>
               ) : (
                 <Box sx={{ width: '100%', height: 280 }}>
                   <ResponsiveContainer>
@@ -157,10 +160,10 @@ export default function AnalyticsPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Vacancy status summary
+                {t('analytics.vacancyStatusSummary')}
               </Typography>
               {loadingVacancyStats ? (
-                <Typography>Loading...</Typography>
+                <Typography>{t('analytics.loading')}</Typography>
               ) : (
                 <Box sx={{ width: '100%', height: 280 }}>
                   <ResponsiveContainer>
@@ -190,10 +193,10 @@ export default function AnalyticsPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Hiring dynamics
+                {t('analytics.hiringDynamics')}
               </Typography>
               {loadingHiring ? (
-                <Typography>Loading...</Typography>
+                <Typography>{t('analytics.loading')}</Typography>
               ) : (
                 <Box sx={{ width: '100%', height: 280 }}>
                   <ResponsiveContainer>
@@ -221,10 +224,10 @@ export default function AnalyticsPage() {
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                Hiring vs turnover
+                {t('analytics.hiringVsTurnover')}
               </Typography>
               {loadingTurnover ? (
-                <Typography>Loading...</Typography>
+                <Typography>{t('analytics.loading')}</Typography>
               ) : (
                 <Box sx={{ width: '100%', height: 280 }}>
                   <ResponsiveContainer>
