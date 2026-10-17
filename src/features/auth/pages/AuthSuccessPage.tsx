@@ -18,13 +18,13 @@ export default function AuthSuccessPage() {
             width: 52,
             height: 52,
             borderRadius: '50%',
-            bgcolor: '#10B981',
+            bgcolor: '#168B48',
             color: '#FFFFFF',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             mb: 2.5,
-            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
+            boxShadow: '0 4px 14px rgba(22, 139, 72, 0.3)',
           }}
         >
           <Check sx={{ fontSize: 32, stroke: '#FFFFFF', strokeWidth: 1.5 }} />
@@ -43,8 +43,8 @@ export default function AuthSuccessPage() {
           variant="contained"
           onClick={() => navigate('/login')}
           sx={{
-            bgcolor: '#FF5B22',
-            '&:hover': { bgcolor: '#E04815' },
+            bgcolor: '#168B48',
+            '&:hover': { bgcolor: '#11703A' },
             color: '#FFFFFF',
             py: 1.3,
             borderRadius: 2,

@@ -144,8 +144,8 @@ export default function NotificationsPopover() {
                     px: 2,
                     py: 1.5,
                     cursor: 'pointer',
-                    bgcolor: item.isRead ? 'transparent' : 'rgba(37, 99, 235, 0.05)',
-                    borderLeft: item.isRead ? '3px solid transparent' : '3px solid #2563eb',
+                    bgcolor: item.isRead ? 'transparent' : 'rgba(22, 139, 72, 0.05)',
+                    borderLeft: item.isRead ? '3px solid transparent' : '3px solid #168B48',
                     '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
                     transition: 'background-color 0.15s',
                   }}

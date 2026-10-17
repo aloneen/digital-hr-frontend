@@ -97,7 +97,7 @@ export default function LoginPage() {
                 bgcolor: '#FFFFFF',
                 '& fieldset': { borderColor: '#E5E7EB' },
                 '&:hover fieldset': { borderColor: '#D1D5DB' },
-                '&.Mui-focused fieldset': { borderColor: '#FF5B22' },
+                '&.Mui-focused fieldset': { borderColor: '#168B48' },
               },
             }}
             slotProps={{
@@ -129,7 +129,7 @@ export default function LoginPage() {
                 bgcolor: '#FFFFFF',
                 '& fieldset': { borderColor: '#E5E7EB' },
                 '&:hover fieldset': { borderColor: '#D1D5DB' },
-                '&.Mui-focused fieldset': { borderColor: '#FF5B22' },
+                '&.Mui-focused fieldset': { borderColor: '#168B48' },
               },
             }}
             slotProps={{
@@ -163,7 +163,7 @@ export default function LoginPage() {
                 size="small"
                 sx={{
                   color: '#D1D5DB',
-                  '&.Mui-checked': { color: '#FF5B22' },
+                  '&.Mui-checked': { color: '#168B48' },
                 }}
               />
             }
@@ -175,7 +175,7 @@ export default function LoginPage() {
             to="/forgot-password"
             variant="body2"
             sx={{
-              color: '#FF5B22',
+              color: '#168B48',
               fontWeight: 600,
               textDecoration: 'none',
               fontSize: '0.85rem',
@@ -192,8 +192,8 @@ export default function LoginPage() {
           variant="contained"
           disabled={isSubmitting}
           sx={{
-            bgcolor: '#FF5B22',
-            '&:hover': { bgcolor: '#E04815' },
+            bgcolor: '#168B48',
+            '&:hover': { bgcolor: '#11703A' },
             color: '#FFFFFF',
             py: 1.3,
             borderRadius: 2,
@@ -214,7 +214,7 @@ export default function LoginPage() {
               to="/register"
               variant="body2"
               sx={{
-                color: '#FF5B22',
+                color: '#168B48',
                 fontWeight: 700,
                 textDecoration: 'none',
                 '&:hover': { textDecoration: 'underline' },
@@ -242,12 +242,12 @@ export default function LoginPage() {
                   onClick={() => handleSelectDemo(acc.email, acc.pass)}
                   clickable
                   sx={{
-                    bgcolor: isSelected ? '#FF5B22' : '#F3F4F6',
+                    bgcolor: isSelected ? '#168B48' : '#F3F4F6',
                     color: isSelected ? '#FFFFFF' : '#374151',
                     fontWeight: 600,
                     fontSize: '0.75rem',
                     '&:hover': {
-                      bgcolor: isSelected ? '#E04815' : '#E5E7EB',
+                      bgcolor: isSelected ? '#11703A' : '#E5E7EB',
                     },
                   }}
                 />

@@ -100,8 +100,8 @@ export default function DashboardPage() {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="hiringAreaFill" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="5%" stopColor="#ff6a3d" stopOpacity={0.28} />
-                        <stop offset="95%" stopColor="#ff6a3d" stopOpacity={0.04} />
+                        <stop offset="5%" stopColor="#168B48" stopOpacity={0.28} />
+                        <stop offset="95%" stopColor="#168B48" stopOpacity={0.04} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="4 4" stroke="#e2e8f0" vertical={false} />
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                         boxShadow: '0 20px 45px rgba(15, 23, 42, 0.08)',
                       }}
                     />
-                    <Area type="monotone" dataKey="value" stroke="#ff6a3d" strokeWidth={3} fill="url(#hiringAreaFill)" />
+                    <Area type="monotone" dataKey="value" stroke="#168B48" strokeWidth={3} fill="url(#hiringAreaFill)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </Box>

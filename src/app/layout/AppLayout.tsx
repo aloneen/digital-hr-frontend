@@ -102,7 +102,7 @@ export default function AppLayout() {
               px: 1.25,
               color: isActive ? 'primary.main' : '#1f2937',
               '&.Mui-selected': {
-                background: 'linear-gradient(90deg, rgba(255, 106, 61, 0.12) 0%, rgba(37, 99, 235, 0.05) 100%)',
+                background: 'linear-gradient(90deg, rgba(22, 139, 72, 0.12) 0%, rgba(22, 139, 72, 0.04) 100%)',
                 color: 'primary.main',
                 '& .MuiListItemIcon-root': { color: 'primary.main' },
               },
@@ -130,10 +130,10 @@ export default function AppLayout() {
             sx={{
               width: 38,
               height: 38,
-              background: 'linear-gradient(135deg, #ff6a3d 0%, #ff8d68 100%)',
+              background: 'linear-gradient(135deg, #168B48 0%, #1EA657 100%)',
               color: '#fff',
               fontWeight: 800,
-              boxShadow: '0 12px 22px rgba(255, 106, 61, 0.24)',
+              boxShadow: '0 12px 22px rgba(22, 139, 72, 0.24)',
             }}
           >
             J
@@ -278,8 +278,8 @@ export default function AppLayout() {
                 height: 38,
                 borderRadius: 2,
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(148, 163, 184, 0.3)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 106, 61, 0.4)' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#ff6a3d' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(22, 139, 72, 0.4)' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#168B48' },
               }}
             >
               <MenuItem value="ru">RU</MenuItem>
@@ -300,7 +300,7 @@ export default function AppLayout() {
                   {user?.role ?? 'EMPLOYEE'}
                 </Typography>
               </Box>
-              <Avatar sx={{ width: 34, height: 34, bgcolor: 'linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%)', fontWeight: 700 }}>
+              <Avatar sx={{ width: 34, height: 34, bgcolor: '#168B48', fontWeight: 700 }}>
                 {user?.email?.charAt(0).toUpperCase() ?? 'U'}
               </Avatar>
             </Box>

@@ -228,10 +228,10 @@ export default function AiJanaPage() {
                       sx={{
                         p: 2,
                         borderRadius: 3,
-                        bgcolor: isAi ? '#f8fafc' : '#2563eb',
+                        bgcolor: isAi ? '#f8fafc' : '#168B48',
                         color: isAi ? '#0f172a' : '#fff',
                         border: isAi ? '1px solid #e2e8f0' : 'none',
-                        boxShadow: isAi ? '0 1px 3px rgba(0,0,0,0.04)' : '0 2px 8px rgba(37,99,235,0.3)',
+                        boxShadow: isAi ? '0 1px 3px rgba(0,0,0,0.04)' : '0 2px 8px rgba(22,139,72,0.3)',
                       }}
                     >
                       <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, wordBreak: 'break-word' }}>
@@ -246,8 +246,8 @@ export default function AiJanaPage() {
                               label={msg.source}
                               size="small"
                               sx={{
-                                bgcolor: '#eff6ff',
-                                color: '#1d4ed8',
+                                bgcolor: '#EBF6F0',
+                                color: '#168B48',
                                 fontWeight: 600,
                                 fontSize: '0.75rem',
                               }}

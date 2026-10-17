@@ -134,8 +134,8 @@ export default function ProfilePage() {
               startIcon={<BeachAccess />}
               onClick={() => navigate('/requests')}
               sx={{
-                bgcolor: '#2563eb',
-                '&:hover': { bgcolor: '#1d4ed8' },
+                bgcolor: '#168B48',
+                '&:hover': { bgcolor: '#11703A' },
                 textTransform: 'none',
                 fontWeight: 600,
                 borderRadius: 2,
@@ -282,7 +282,7 @@ export default function ProfilePage() {
                       <Typography variant="caption" color="text.secondary">
                         {t('profile.vacationLeft')}
                       </Typography>
-                      <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981' }}>
+                      <Typography variant="h5" sx={{ fontWeight: 800, color: '#168B48' }}>
                         {vacationLeft}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">

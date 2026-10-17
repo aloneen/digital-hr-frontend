@@ -69,7 +69,7 @@ export default function EmployeeDetailPage() {
             <Box
               sx={{
                 height: 160,
-                background: 'linear-gradient(135deg, #ffb199 0%, #ff7b54 35%, #f97316 100%)',
+                background: 'linear-gradient(135deg, #34d399 0%, #168B48 50%, #0F6433 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -86,7 +86,7 @@ export default function EmployeeDetailPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: 32,
-                  color: '#ff6a3d',
+                  color: '#168B48',
                   fontWeight: 800,
                   boxShadow: '0 12px 30px rgba(15, 23, 42, 0.12)',
                 }}

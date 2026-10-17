@@ -25,7 +25,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { analyticsApi } from '../api/analyticsApi';
 
-const COLORS = ['#1f6feb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = ['#168B48', '#2563eb', '#f59e0b', '#ef4444', '#8b5cf6'];
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function AnalyticsPage() {
@@ -203,15 +203,15 @@ export default function AnalyticsPage() {
                     <AreaChart data={hiringTrend}>
                       <defs>
                         <linearGradient id="hiringFill" x1="0" x2="0" y1="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
+                          <stop offset="5%" stopColor="#168B48" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#168B48" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="label" tickLine={false} axisLine={false} />
                       <YAxis tickLine={false} axisLine={false} />
                       <Tooltip />
-                      <Area type="monotone" dataKey="count" stroke="#10b981" fill="url(#hiringFill)" />
+                      <Area type="monotone" dataKey="count" stroke="#168B48" fill="url(#hiringFill)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </Box>

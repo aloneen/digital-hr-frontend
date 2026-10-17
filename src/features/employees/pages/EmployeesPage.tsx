@@ -23,7 +23,7 @@ import EmployeeFormDialog from '../components/EmployeeFormDialog';
 
 const employeeStatusOptions = ['ACTIVE', 'ON_LEAVE', 'TERMINATED'];
 
-const avatarPalette = ['#ff9a8b', '#ffd166', '#7bdff2', '#8ecae6', '#b8f2e6', '#ffafcc', '#cdb4db', '#90be6d'];
+const avatarPalette = ['#168B48', '#ffd166', '#7bdff2', '#8ecae6', '#b8f2e6', '#ffafcc', '#cdb4db', '#90be6d'];
 
 export default function EmployeesPage() {
   const { t } = useTranslation();
@@ -94,7 +94,7 @@ export default function EmployeesPage() {
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ p: 0, height: '100%' }}>
             <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2.25 }}>
-              <Box sx={{ width: 44, height: 44, borderRadius: 2, background: 'linear-gradient(135deg, #ff9a8b, #ff6a3d)', display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 800 }}>
+              <Box sx={{ width: 44, height: 44, borderRadius: 2, background: 'linear-gradient(135deg, #1EA657, #168B48)', display: 'grid', placeItems: 'center', color: '#fff', fontWeight: 800 }}>
                 ☺
               </Box>
               <Box>

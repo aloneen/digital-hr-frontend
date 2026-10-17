@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
                 bgcolor: '#FFFFFF',
                 '& fieldset': { borderColor: '#E5E7EB' },
                 '&:hover fieldset': { borderColor: '#D1D5DB' },
-                '&.Mui-focused fieldset': { borderColor: '#FF5B22' },
+                '&.Mui-focused fieldset': { borderColor: '#168B48' },
               },
             }}
             slotProps={{
@@ -90,8 +90,8 @@ export default function ForgotPasswordPage() {
           variant="contained"
           disabled={isSubmitting}
           sx={{
-            bgcolor: '#FF5B22',
-            '&:hover': { bgcolor: '#E04815' },
+            bgcolor: '#168B48',
+            '&:hover': { bgcolor: '#11703A' },
             color: '#FFFFFF',
             py: 1.3,
             borderRadius: 2,
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
               to="/login"
               variant="body2"
               sx={{
-                color: '#FF5B22',
+                color: '#168B48',
                 fontWeight: 700,
                 textDecoration: 'none',
                 '&:hover': { textDecoration: 'underline' },

@@ -23,12 +23,12 @@ export default function AuthLayout({
         bgcolor: '#FFFFFF',
       }}
     >
-      {/* Left Column: Peach illustration panel */}
+      {/* Left Column: Jana Post subtle green illustration panel */}
       <Box
         sx={{
           width: { xs: '100%', md: '50%' },
           minHeight: { xs: 260, md: '100vh' },
-          bgcolor: '#FEF1EB',
+          bgcolor: '#EBF6F0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -44,7 +44,7 @@ export default function AuthLayout({
             maxWidth: '100%',
             maxHeight: { xs: 260, sm: 360, md: 540, lg: 620 },
             objectFit: 'contain',
-            filter: 'drop-shadow(0 10px 25px rgba(250, 84, 28, 0.08))',
+            filter: 'drop-shadow(0 10px 25px rgba(22, 139, 72, 0.08))',
           }}
         />
       </Box>

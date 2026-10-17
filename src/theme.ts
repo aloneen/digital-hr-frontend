@@ -4,9 +4,9 @@ export const appTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#ff6a3d',
-      light: '#fff3ee',
-      dark: '#ef5328',
+      main: '#168B48',
+      light: '#E8F5EE',
+      dark: '#11703A',
       contrastText: '#ffffff',
     },
     secondary: {
@@ -14,7 +14,7 @@ export const appTheme = createTheme({
       light: '#e2e8f0',
     },
     background: {
-      default: '#f4f7fb',
+      default: '#F6FAF7',
       paper: '#ffffff',
     },
     text: {
@@ -109,10 +109,10 @@ export const appTheme = createTheme({
           textTransform: 'none',
           paddingTop: 10,
           paddingBottom: 10,
-          background: 'linear-gradient(135deg, #ff6a3d 0%, #ff8a5d 100%)',
+          background: 'linear-gradient(135deg, #168B48 0%, #1EA657 100%)',
           color: '#ffffff',
           '&:hover': {
-            background: 'linear-gradient(135deg, #f25d30 0%, #f77a47 100%)',
+            background: 'linear-gradient(135deg, #11703A 0%, #168B48 100%)',
           },
         },
       },
@@ -140,11 +140,11 @@ export const appTheme = createTheme({
             borderColor: 'rgba(148, 163, 184, 0.45)',
           },
           '&:hover fieldset': {
-            borderColor: 'rgba(255, 106, 61, 0.45)',
+            borderColor: 'rgba(22, 139, 72, 0.45)',
           },
           '&.Mui-focused fieldset': {
-            borderColor: '#ff6a3d',
-            boxShadow: '0 0 0 3px rgba(255, 106, 61, 0.12)',
+            borderColor: '#168B48',
+            boxShadow: '0 0 0 3px rgba(22, 139, 72, 0.14)',
           },
         },
       },

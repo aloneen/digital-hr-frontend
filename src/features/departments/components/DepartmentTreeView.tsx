@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type { DepartmentTree } from '../../../shared/types/department';
 
 const departmentColors: Record<string, string> = {
-  HEAD_OFFICE: '#f97316',
+  HEAD_OFFICE: '#168B48',
   BLOCK: '#8b5cf6',
   CITY: '#14b8a6',
   FRANCHISE: '#3b82f6',

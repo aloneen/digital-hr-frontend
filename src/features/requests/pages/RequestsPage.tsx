@@ -163,8 +163,8 @@ export default function RequestsPage() {
           startIcon={<Add />}
           onClick={() => setCreateDialogOpen(true)}
           sx={{
-            bgcolor: '#2563eb',
-            '&:hover': { bgcolor: '#1d4ed8' },
+            bgcolor: '#168B48',
+            '&:hover': { bgcolor: '#11703A' },
             textTransform: 'none',
             fontWeight: 600,
             borderRadius: 2,
@@ -413,7 +413,7 @@ export default function RequestsPage() {
             <Button onClick={() => setCreateDialogOpen(false)} color="inherit">
               {t('requests.cancel')}
             </Button>
-            <Button type="submit" variant="contained" disabled={createMutation.isPending} sx={{ bgcolor: '#2563eb', textTransform: 'none', fontWeight: 600 }}>
+            <Button type="submit" variant="contained" disabled={createMutation.isPending} sx={{ bgcolor: '#168B48', '&:hover': { bgcolor: '#11703A' }, textTransform: 'none', fontWeight: 600 }}>
               {createMutation.isPending ? t('requests.sending') : t('requests.sendRequest')}
             </Button>
           </DialogActions>

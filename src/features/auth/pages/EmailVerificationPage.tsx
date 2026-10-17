@@ -89,11 +89,11 @@ export default function EmailVerificationPage() {
                 borderRadius: 2,
                 bgcolor: '#FFFFFF',
                 '& fieldset': {
-                  borderColor: idx === 0 || digit ? '#FF5B22' : '#E5E7EB',
+                  borderColor: idx === 0 || digit ? '#168B48' : '#E5E7EB',
                   borderWidth: idx === 0 || digit ? 2 : 1,
                 },
-                '&:hover fieldset': { borderColor: '#FF5B22' },
-                '&.Mui-focused fieldset': { borderColor: '#FF5B22' },
+                '&:hover fieldset': { borderColor: '#168B48' },
+                '&.Mui-focused fieldset': { borderColor: '#168B48' },
               }}
             />
           ))}
@@ -123,7 +123,7 @@ export default function EmailVerificationPage() {
             <Typography
               component="span"
               sx={{
-                color: '#FF5B22',
+                color: '#168B48',
                 fontWeight: 700,
                 cursor: 'pointer',
                 '&:hover': { textDecoration: 'underline' },
@@ -142,8 +142,8 @@ export default function EmailVerificationPage() {
           variant="contained"
           disabled={isSubmitting}
           sx={{
-            bgcolor: '#FF5B22',
-            '&:hover': { bgcolor: '#E04815' },
+            bgcolor: '#168B48',
+            '&:hover': { bgcolor: '#11703A' },
             color: '#FFFFFF',
             py: 1.3,
             borderRadius: 2,
