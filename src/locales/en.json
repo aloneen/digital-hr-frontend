@@ -263,7 +263,20 @@
       "offer": "Offer",
       "hired": "Hired",
       "rejected": "Rejected"
-    }
+    },
+    "dragDropHint": "Drag and drop candidate cards between columns to change recruitment stage",
+    "dropHere": "Drop candidate here",
+    "stageChanged": "Candidate moved to stage \"{{stage}}\"",
+    "changeStage": "Change stage",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone",
+    "notes": "Notes",
+    "createSuccess": "Candidate successfully added",
+    "cancel": "Cancel",
+    "create": "Add",
+    "totalCandidates": "Total candidates"
   },
   "onboarding": {
     "pageTitle": "Onboarding",

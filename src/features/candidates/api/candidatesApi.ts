@@ -12,4 +12,22 @@ export const candidatesApi = {
     const { data } = await apiClient.get<ApiResponse<Candidate>>(`/candidates/${id}`);
     return data.data;
   },
+
+  updateStage: async (id: number, stage: Candidate['stage']) => {
+    const { data } = await apiClient.patch<ApiResponse<Candidate>>(`/candidates/${id}/stage`, { stage });
+    return data.data;
+  },
+
+  create: async (payload: {
+    firstName: string;
+    lastName: string;
+    vacancyId: number;
+    email?: string;
+    phone?: string;
+    notes?: string;
+    resumeUrl?: string;
+  }) => {
+    const { data } = await apiClient.post<ApiResponse<Candidate>>('/candidates', payload);
+    return data.data;
+  },
 };

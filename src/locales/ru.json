@@ -264,7 +264,20 @@
       "offer": "Оффер",
       "hired": "Принят",
       "rejected": "Отклонен"
-    }
+    },
+    "dragDropHint": "Перетаскивайте карточки кандидатов между колонками для быстрой смены этапа",
+    "dropHere": "Перетащите кандидата сюда",
+    "stageChanged": "Статус кандидата изменен на «{{stage}}»",
+    "changeStage": "Сменить этап",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "email": "Email",
+    "phone": "Телефон",
+    "notes": "Заметки",
+    "createSuccess": "Кандидат успешно добавлен",
+    "cancel": "Отмена",
+    "create": "Добавить",
+    "totalCandidates": "Всего кандидатов"
   },
   "onboarding": {
     "pageTitle": "Онбординг",
