@@ -10,6 +10,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Employee } from '../../../shared/types/employee';
 
@@ -38,10 +39,10 @@ export default function EmployeesTable({ rows }: { rows: Employee[] }) {
 
         <TableBody>
           {rows.map((employee) => (
-            <TableRow key={employee.id} hover>
+            <TableRow key={employee.id} hover component={Link} to={`/employees/${employee.id}`} sx={{ textDecoration: 'none', display: 'table-row' }}>
               <TableCell>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                     {employee.firstName} {employee.lastName}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
@@ -50,9 +51,9 @@ export default function EmployeesTable({ rows }: { rows: Employee[] }) {
                 </Box>
               </TableCell>
 
-              <TableCell>{employee.position}</TableCell>
-              <TableCell>{employee.departmentId}</TableCell>
-              <TableCell>{employee.city || '—'}</TableCell>
+              <TableCell sx={{ color: 'text.primary' }}>{employee.position}</TableCell>
+              <TableCell sx={{ color: 'text.primary' }}>{employee.departmentId}</TableCell>
+              <TableCell sx={{ color: 'text.primary' }}>{employee.city || '—'}</TableCell>
 
               <TableCell>
                 <Chip
@@ -62,7 +63,7 @@ export default function EmployeesTable({ rows }: { rows: Employee[] }) {
                 />
               </TableCell>
 
-              <TableCell>{employee.hireDate || '—'}</TableCell>
+              <TableCell sx={{ color: 'text.primary' }}>{employee.hireDate || '—'}</TableCell>
             </TableRow>
           ))}
         </TableBody>

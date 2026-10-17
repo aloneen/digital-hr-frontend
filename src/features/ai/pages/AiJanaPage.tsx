@@ -6,7 +6,6 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Divider,
   IconButton,
   InputBase,
   Paper,
@@ -18,7 +17,6 @@ import {
   InfoOutlined,
   Psychology,
   Send,
-  Verified,
 } from '@mui/icons-material';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -142,8 +140,8 @@ export default function AiJanaPage() {
             <Psychology sx={{ fontSize: 32 }} />
           </Avatar>
           <Box>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '-0.03em' }}>
                 {t('ai.title')}
               </Typography>
               <Chip
@@ -153,16 +151,15 @@ export default function AiJanaPage() {
                 sx={{ bgcolor: 'rgba(254,240,138,0.2)', color: '#fef08a', fontWeight: 600 }}
               />
             </Box>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mt: 0.5 }}>
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.82)', mt: 0.5, lineHeight: 1.5 }}>
               {t('ai.subtitle')}
             </Typography>
           </Box>
         </Box>
       </Card>
 
-      {/* Suggested Quick Prompts */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 1 }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 1 }}>
           {t('ai.quickQuestions')}
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -177,7 +174,9 @@ export default function AiJanaPage() {
                 bgcolor: '#fff',
                 borderColor: '#cbd5e1',
                 borderRadius: 2,
-                fontSize: '0.8rem',
+                fontSize: '0.78rem',
+                lineHeight: 1.2,
+                py: 0.35,
                 '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' },
               }}
             />
@@ -185,7 +184,6 @@ export default function AiJanaPage() {
         </Box>
       </Box>
 
-      {/* Chat History Container */}
       <Card
         sx={{
           borderRadius: 3,
@@ -198,7 +196,7 @@ export default function AiJanaPage() {
         }}
       >
         <CardContent sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
             {messages.map((msg) => {
               const isAi = msg.sender === 'ai';
 
@@ -224,7 +222,7 @@ export default function AiJanaPage() {
                     {isAi ? <Psychology fontSize="small" /> : t('ai.userShort')}
                   </Avatar>
 
-                  <Box sx={{ maxWidth: { xs: '85%', sm: '75%' } }}>
+                  <Box sx={{ maxWidth: { xs: '86%', sm: '76%' } }}>
                     <Paper
                       elevation={0}
                       sx={{
@@ -236,7 +234,7 @@ export default function AiJanaPage() {
                         boxShadow: isAi ? '0 1px 3px rgba(0,0,0,0.04)' : '0 2px 8px rgba(37,99,235,0.3)',
                       }}
                     >
-                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, wordBreak: 'break-word' }}>
                         {msg.text}
                       </Typography>
 
@@ -258,41 +256,42 @@ export default function AiJanaPage() {
                               <Chip
                                 label={msg.category}
                                 size="small"
-                                sx={{ bgcolor: '#f1f5f9', color: '#475569', fontSize: '0.75rem' }}
-                              />
-                            )}
-                            {msg.confidence !== undefined && (
-                              <Chip
-                                icon={<Verified sx={{ fontSize: 14, color: '#16a34a !important' }} />}
-                                label={`${Math.round(msg.confidence * 100)}% ${t('ai.match')}`}
-                                size="small"
-                                sx={{ bgcolor: '#dcfce7', color: '#166534', fontSize: '0.75rem', fontWeight: 600 }}
+                                sx={{
+                                  bgcolor: '#f1f5f9',
+                                  color: '#475569',
+                                  fontWeight: 600,
+                                  fontSize: '0.75rem',
+                                }}
                               />
                             )}
                           </Box>
                         </Box>
                       )}
-
-                      {isAi && !msg.found && (
-                        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5, color: '#b91c1c' }}>
-                          <InfoOutlined fontSize="small" />
-                          <Typography variant="caption">{t('ai.outOfPolicy')}</Typography>
-                        </Box>
-                      )}
                     </Paper>
 
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                        display: 'block',
-                        mt: 0.5,
-                        px: 1,
-                        textAlign: isAi ? 'left' : 'right',
-                      }}
-                    >
-                      {msg.timestamp}
-                    </Typography>
+                    {isAi && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.75, px: 0.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                          <InfoOutlined sx={{ fontSize: 15, color: 'text.secondary' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            {msg.found === false ? t('ai.noDataFound') : t('ai.verifiedAnswer')}
+                          </Typography>
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          {msg.timestamp}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {!isAi && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 0.75, textAlign: 'right', px: 0.5 }}
+                      >
+                        {msg.timestamp}
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
               );
@@ -316,40 +315,45 @@ export default function AiJanaPage() {
           </Box>
         </CardContent>
 
-        <Divider />
-
-        {/* Input Bar */}
-        <Box sx={{ p: 2, bgcolor: '#fff' }}>
+        <Box sx={{ px: 2, pb: 2 }}>
           <Paper
-            component="form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
+            elevation={0}
             sx={{
-              p: '2px 4px',
               display: 'flex',
               alignItems: 'center',
+              gap: 1,
+              border: '1px solid #dbe4f0',
               borderRadius: 3,
-              border: '1px solid #cbd5e1',
-              boxShadow: 'none',
-              '&:focus-within': { borderColor: '#2563eb', boxShadow: '0 0 0 2px rgba(37,99,235,0.1)' },
+              px: 1.5,
+              py: 0.75,
+              bgcolor: '#fff',
             }}
           >
             <InputBase
-              sx={{ ml: 2, flex: 1, fontSize: '0.95rem' }}
-              placeholder={t('ai.inputPlaceholder')}
+              fullWidth
               value={inputQuestion}
-              onChange={(e) => setInputQuestion(e.target.value)}
-              disabled={askMutation.isPending}
+              placeholder={t('ai.placeholder')}
+              onChange={(event) => setInputQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  handleSend();
+                }
+              }}
+              sx={{ fontSize: '0.96rem', color: 'text.primary' }}
             />
             <IconButton
-              type="submit"
               color="primary"
-              sx={{ p: '10px' }}
+              onClick={() => handleSend()}
               disabled={!inputQuestion.trim() || askMutation.isPending}
+              sx={{
+                bgcolor: 'primary.main',
+                color: '#fff',
+                '&:hover': { bgcolor: 'primary.dark' },
+                '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' },
+              }}
             >
-              <Send />
+              {askMutation.isPending ? <CircularProgress size={18} color="inherit" /> : <Send fontSize="small" />}
             </IconButton>
           </Paper>
         </Box>

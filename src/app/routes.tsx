@@ -9,8 +9,10 @@ import AuthSuccessPage from '../features/auth/pages/AuthSuccessPage';
 
 import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import EmployeesPage from '../features/employees/pages/EmployeesPage';
+import EmployeeDetailPage from '../features/employees/pages/EmployeeDetailPage';
 import DepartmentsPage from '../features/departments/pages/DepartmentsPage';
 import VacanciesPage from '../features/vacancies/pages/VacanciesPage';
+import VacancyDetailPage from '../features/vacancies/pages/VacancyDetailPage';
 import CandidatesPage from '../features/candidates/pages/CandidatesPage';
 import OnboardingPage from '../features/onboarding/pages/OnboardingPage';
 import AnalyticsPage from '../features/analytics/pages/AnalyticsPage';
@@ -55,8 +57,10 @@ export default function AppRoutes() {
           {/* Administrative / HR routes */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/employees/:id" element={<EmployeeDetailPage />} />
           <Route path="/departments" element={<DepartmentsPage />} />
           <Route path="/vacancies" element={<VacanciesPage />} />
+          <Route path="/vacancies/:id" element={<VacancyDetailPage />} />
           <Route path="/candidates" element={<CandidatesPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />

@@ -155,6 +155,7 @@ export default function AppLayout() {
         <List
           subheader={
             <ListSubheader
+              disableSticky
               sx={{
                 bgcolor: 'transparent',
                 lineHeight: '28px',
@@ -165,6 +166,7 @@ export default function AppLayout() {
                 letterSpacing: '0.08em',
                 px: 1.25,
                 pb: 0.8,
+                pt: 0.8,
               }}
             >
               {t('nav.employeeServices')}
@@ -180,6 +182,7 @@ export default function AppLayout() {
             <List
               subheader={
                 <ListSubheader
+                  disableSticky
                   sx={{
                     bgcolor: 'transparent',
                     lineHeight: '28px',
@@ -190,6 +193,7 @@ export default function AppLayout() {
                     letterSpacing: '0.08em',
                     px: 1.25,
                     pb: 0.8,
+                    pt: 0.8,
                   }}
                 >
                   {t('nav.hrManagement')}

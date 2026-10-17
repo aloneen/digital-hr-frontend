@@ -282,5 +282,25 @@
     "markAllRead": "Mark all as read",
     "empty": "No notifications yet",
     "loading": "Loading notifications..."
+  },
+  "ai": {
+    "title": "AI Jana Assistant",
+    "subtitle": "I help you quickly find answers about HR processes, leave, training and company regulations.",
+    "noHallucinations": "no hallucinations",
+    "quickQuestions": "Quick questions",
+    "promptVacation": "Request leave",
+    "promptAdvance": "Request advance",
+    "promptProbation": "Probation review",
+    "promptSickLeave": "Sick leave",
+    "promptAcademy": "How to enroll in Academy",
+    "welcomeText": "Ask a question and I will find the relevant answer from JanaPost internal policies and documents.",
+    "kbSource": "JanaPost knowledge base",
+    "kbCategory": "HR / Policies",
+    "requestError": "Could not get an answer: {{error}}",
+    "userShort": "Me",
+    "placeholder": "Ask about leave, advance, policy or training...",
+    "searching": "Searching the knowledge base...",
+    "verifiedAnswer": "Verified answer",
+    "noDataFound": "No data found"
   }
 }
