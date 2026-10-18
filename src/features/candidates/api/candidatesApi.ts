@@ -30,4 +30,21 @@ export const candidatesApi = {
     const { data } = await apiClient.post<ApiResponse<Candidate>>('/candidates', payload);
     return data.data;
   },
+
+  update: async (
+    id: number,
+    payload: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+      notes?: string;
+      resumeUrl?: string;
+      assignedTo?: number;
+    }
+  ) => {
+    const { data } = await apiClient.put<ApiResponse<Candidate>>(`/candidates/${id}`, payload);
+    return data.data;
+  },
 };
+
