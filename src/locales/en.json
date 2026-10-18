@@ -38,7 +38,11 @@
     "employee": "Employee",
     "hr": "HR",
     "director": "Director",
-    "admin": "Admin"
+    "admin": "Admin",
+    "employeePhonePasswordHint": "For new employees: your login password is your phone number (provided during HR registration). Google sign-in is also available.",
+    "phonePasswordNotice": "Phone number is used as password",
+    "or": "OR",
+    "continueWithGoogle": "Continue with Google"
   },
   "dashboard": {
     "overview": "Overview",
@@ -236,7 +240,10 @@
       "phone": "Phone",
       "iin": "IIN",
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "emailHelper": "Used as the login username",
+      "phoneHelper": "Used as initial password for the employee",
+      "authNotice": "If employee does not have a Google account, they can sign in using their Email (username) and Phone number (password)."
     }
   },
   "departments": {

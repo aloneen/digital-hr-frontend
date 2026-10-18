@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Button, Divider, Typography, CircularProgress, Alert } from '@mui/material';
-import { Apple, Facebook } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 declare global {
@@ -35,6 +35,7 @@ function GoogleIcon() {
 
 export default function SocialLoginButtons() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { loginWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -70,9 +71,9 @@ export default function SocialLoginButtons() {
           window.google.accounts.id.renderButton(googleBtnRef.current, {
             theme: 'outline',
             size: 'large',
-            type: 'icon',
+            type: 'standard',
             shape: 'rectangular',
-            width: '100%',
+            width: 380,
           });
         } catch (e) {
           console.warn('Google Identity initialization error', e);
@@ -112,87 +113,55 @@ export default function SocialLoginButtons() {
       <Box sx={{ display: 'flex', alignItems: 'center', my: 2.5 }}>
         <Divider sx={{ flex: 1, borderColor: '#E5E7EB' }} />
         <Typography variant="caption" sx={{ px: 2, color: '#9CA3AF', fontWeight: 600 }}>
-          OR
+          {t('auth.or', 'OR')}
         </Typography>
         <Divider sx={{ flex: 1, borderColor: '#E5E7EB' }} />
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 1.5 }}>
-        {/* Facebook */}
+      {/* Google Container with native button overlay */}
+      <Box sx={{ position: 'relative', height: 44, width: '100%' }}>
         <Button
           fullWidth
-          variant="contained"
+          variant="outlined"
+          onClick={handleManualClick}
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : <GoogleIcon />}
           sx={{
-            bgcolor: '#1877F2',
-            '&:hover': { bgcolor: '#166FE5' },
-            color: '#FFFFFF',
+            bgcolor: '#FFFFFF',
+            borderColor: '#E5E7EB',
+            color: '#374151',
+            textTransform: 'none',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            '&:hover': { bgcolor: '#F9FAFB', borderColor: '#D1D5DB' },
             height: 44,
             borderRadius: 2,
-            minWidth: 0,
             boxShadow: 'none',
+            width: '100%',
           }}
         >
-          <Facebook sx={{ fontSize: 22 }} />
+          {t('auth.continueWithGoogle', 'Войти через Google')}
         </Button>
 
-        {/* Google Container with native button overlay */}
-        <Box sx={{ flex: 1, position: 'relative', height: 44 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={handleManualClick}
-            disabled={loading}
-            sx={{
-              bgcolor: '#FFFFFF',
-              borderColor: '#E5E7EB',
-              '&:hover': { bgcolor: '#F9FAFB', borderColor: '#D1D5DB' },
-              height: 44,
-              borderRadius: 2,
-              minWidth: 0,
-              boxShadow: 'none',
-              width: '100%',
-            }}
-          >
-            {loading ? <CircularProgress size={20} /> : <GoogleIcon />}
-          </Button>
-
-          {/* Hidden GSI button container overlay */}
-          <Box
-            ref={googleBtnRef}
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              opacity: 0.001,
-              overflow: 'hidden',
-              cursor: 'pointer',
-              zIndex: 2,
-              '& iframe': {
-                width: '100% !important',
-                height: '100% !important',
-              },
-            }}
-          />
-        </Box>
-
-        {/* Apple */}
-        <Button
-          fullWidth
-          variant="contained"
+        {/* Hidden GSI button container overlay */}
+        <Box
+          ref={googleBtnRef}
           sx={{
-            bgcolor: '#1F242F',
-            '&:hover': { bgcolor: '#111827' },
-            color: '#FFFFFF',
-            height: 44,
-            borderRadius: 2,
-            minWidth: 0,
-            boxShadow: 'none',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0.001,
+            overflow: 'hidden',
+            cursor: 'pointer',
+            zIndex: 2,
+            '& iframe': {
+              width: '100% !important',
+              height: '100% !important',
+            },
           }}
-        >
-          <Apple sx={{ fontSize: 22 }} />
-        </Button>
+        />
       </Box>
     </Box>
   );
