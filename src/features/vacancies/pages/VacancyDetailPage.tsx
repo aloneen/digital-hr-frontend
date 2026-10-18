@@ -5,9 +5,15 @@ import {
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
   LinearProgress,
+  Snackbar,
   Stack,
   Typography,
 } from '@mui/material';
@@ -15,9 +21,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlaceIcon from '@mui/icons-material/Place';
 import BusinessIcon from '@mui/icons-material/Business';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { vacanciesApi } from '../api/vacanciesApi';
+import VacancyFormDialog from '../components/VacancyFormDialog';
+import type { VacancyUpdateRequest } from '../../../shared/types/vacancy';
 
 const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
   OPEN: 'success',
@@ -28,11 +39,44 @@ const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
 export default function VacancyDetailPage() {
   const { id } = useParams();
   const vacancyId = Number(id);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const { data: vacancy, isLoading, isError } = useQuery({
     queryKey: ['vacancy', vacancyId],
     queryFn: () => vacanciesApi.getById(vacancyId),
     enabled: !!vacancyId,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: VacancyUpdateRequest) => vacanciesApi.update(vacancyId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vacancy', vacancyId] });
+      queryClient.invalidateQueries({ queryKey: ['vacancies'] });
+      setSnackbar({ open: true, message: 'Вакансия успешно обновлена', severity: 'success' });
+    },
+    onError: (err: Error) => {
+      setSnackbar({ open: true, message: err.message || 'Ошибка обновления', severity: 'error' });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => vacanciesApi.delete(vacancyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vacancies'] });
+      navigate('/vacancies');
+    },
+    onError: (err: Error) => {
+      setSnackbar({ open: true, message: err.message || 'Ошибка удаления', severity: 'error' });
+    },
   });
 
   if (isLoading) {
@@ -57,6 +101,24 @@ export default function VacancyDetailPage() {
         <Button component={Link} to="/vacancies" startIcon={<ArrowBackIcon />}>
           Back to vacancies
         </Button>
+
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<EditIcon />}
+            onClick={() => setIsEditOpen(true)}
+          >
+            Редактировать
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteOutlinedIcon />}
+            onClick={() => setIsDeleteOpen(true)}
+          >
+            Удалить
+          </Button>
+        </Stack>
       </Box>
 
       <Grid container spacing={3}>
@@ -129,6 +191,47 @@ export default function VacancyDetailPage() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Edit Dialog */}
+      <VacancyFormDialog
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSubmit={async (payload) => {
+          await updateMutation.mutateAsync(payload as VacancyUpdateRequest);
+        }}
+        initialData={vacancy}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteOpen} onClose={() => setIsDeleteOpen(false)}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Удалить вакансию?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Вы уверены, что хотите удалить вакансию «{vacancy.title}»? Если у вакансии есть связанные кандидаты, она будет переведена в закрытый статус.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setIsDeleteOpen(false)}>Отмена</Button>
+          <Button
+            onClick={() => deleteMutation.mutate()}
+            color="error"
+            variant="contained"
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Удаление...' : 'Удалить'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

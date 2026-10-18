@@ -13,3 +13,22 @@ export type Vacancy = {
   createdAt?: string | null;
   updatedAt?: string | null;
 };
+
+export type VacancyCreateRequest = {
+  title: string;
+  description?: string;
+  departmentId: number;
+  city?: string;
+  requirements?: string;
+  salaryRange?: string;
+};
+
+export type VacancyUpdateRequest = {
+  title?: string;
+  description?: string;
+  departmentId?: number;
+  city?: string;
+  status?: VacancyStatus;
+  requirements?: string;
+  salaryRange?: string;
+};

@@ -5,9 +5,15 @@ import {
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
   LinearProgress,
+  Snackbar,
   Stack,
   Typography,
 } from '@mui/material';
@@ -16,9 +22,16 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WorkIcon from '@mui/icons-material/Work';
-import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import ChatIcon from '@mui/icons-material/Chat';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { employeesApi } from '../api/employeesApi';
+import EmployeeFormDialog from '../components/EmployeeFormDialog';
+import SendMessageDialog from '../components/SendMessageDialog';
+import type { EmployeeUpdateRequest } from '../../../shared/types/employee';
 
 const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
   ACTIVE: 'success',
@@ -29,11 +42,47 @@ const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
 export default function EmployeeDetailPage() {
   const { id } = useParams();
   const employeeId = Number(id);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const { data: employee, isLoading, isError } = useQuery({
     queryKey: ['employee', employeeId],
     queryFn: () => employeesApi.getById(employeeId),
     enabled: !!employeeId,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: EmployeeUpdateRequest) => employeesApi.update(employeeId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employee', employeeId] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setSnackbar({ open: true, message: 'Данные сотрудника успешно обновлены', severity: 'success' });
+    },
+    onError: (err: Error) => {
+      setSnackbar({ open: true, message: err.message || 'Ошибка обновления', severity: 'error' });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => employeesApi.delete(employeeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setSnackbar({ open: true, message: 'Сотрудник переведен в статус уволенных (TERMINATED)', severity: 'success' });
+      navigate('/employees');
+    },
+    onError: (err: Error) => {
+      setSnackbar({ open: true, message: err.message || 'Ошибка увольнения сотрудника', severity: 'error' });
+    },
   });
 
   if (isLoading) {
@@ -47,7 +96,7 @@ export default function EmployeeDetailPage() {
   if (isError || !employee) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error">Employee not found</Alert>
+        <Alert severity="error">Сотрудник не найден</Alert>
       </Box>
     );
   }
@@ -59,8 +108,19 @@ export default function EmployeeDetailPage() {
     <Box sx={{ p: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Button component={Link} to="/employees" startIcon={<ArrowBackIcon />}>
-          Back to employees
+          К списку сотрудников
         </Button>
+
+        {employee.status !== 'TERMINATED' && (
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<PersonRemoveIcon />}
+            onClick={() => setIsDeleteOpen(true)}
+          >
+            Уволить сотрудника
+          </Button>
+        )}
       </Box>
 
       <Grid container spacing={3}>
@@ -97,7 +157,7 @@ export default function EmployeeDetailPage() {
 
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800 }}>
                   {fullName}
                 </Typography>
                 <Chip label={employee.status} color={statusColor[employee.status] || 'default'} />
@@ -126,11 +186,21 @@ export default function EmployeeDetailPage() {
               <Divider sx={{ my: 2 }} />
 
               <Stack direction="row" spacing={1}>
-                <Button variant="contained" fullWidth>
-                  Edit info
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<EditIcon />}
+                  onClick={() => setIsEditOpen(true)}
+                >
+                  Изменить
                 </Button>
-                <Button variant="outlined" fullWidth>
-                  Message
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<ChatIcon />}
+                  onClick={() => setIsMessageOpen(true)}
+                >
+                  Написать
                 </Button>
               </Stack>
             </CardContent>
@@ -142,25 +212,33 @@ export default function EmployeeDetailPage() {
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                  Basic information
+                  Основная информация
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Department</Typography>
+                    <Typography variant="caption" color="text.secondary">ID Подразделения</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>{employee.departmentId}</Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Hire date</Typography>
+                    <Typography variant="caption" color="text.secondary">Дата найма</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>{employee.hireDate || '—'}</Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">Birth date</Typography>
+                    <Typography variant="caption" color="text.secondary">Дата рождения</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>{employee.birthDate || '—'}</Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary">IIN</Typography>
+                    <Typography variant="caption" color="text.secondary">ИИН</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>{employee.iin || '—'}</Typography>
                   </Grid>
+                  {employee.terminationDate && (
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="caption" color="error">Дата увольнения</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: 'error.main' }}>
+                        {employee.terminationDate}
+                      </Typography>
+                    </Grid>
+                  )}
                 </Grid>
               </CardContent>
             </Card>
@@ -168,19 +246,19 @@ export default function EmployeeDetailPage() {
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
-                  Performance overview
+                  Эффективность и статус
                 </Typography>
                 <Stack spacing={2}>
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="body2" color="text.secondary">Productivity</Typography>
+                      <Typography variant="body2" color="text.secondary">Продуктивность</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>81%</Typography>
                     </Box>
                     <LinearProgress variant="determinate" value={81} color="success" sx={{ height: 10, borderRadius: 999 }} />
                   </Box>
                   <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="body2" color="text.secondary">Engagement</Typography>
+                      <Typography variant="body2" color="text.secondary">Вовлеченность</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>76%</Typography>
                     </Box>
                     <LinearProgress variant="determinate" value={76} color="warning" sx={{ height: 10, borderRadius: 999 }} />
@@ -191,6 +269,57 @@ export default function EmployeeDetailPage() {
           </Stack>
         </Grid>
       </Grid>
+
+      {/* Edit Employee Dialog */}
+      <EmployeeFormDialog
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSubmit={async (payload) => {
+          await updateMutation.mutateAsync(payload as EmployeeUpdateRequest);
+        }}
+        initialData={employee}
+      />
+
+      {/* Send Message Dialog */}
+      <SendMessageDialog
+        open={isMessageOpen}
+        onClose={() => setIsMessageOpen(false)}
+        employee={employee}
+        onSuccess={() => {
+          setSnackbar({ open: true, message: 'Сообщение успешно отправлено сотруднику', severity: 'success' });
+        }}
+      />
+
+      {/* Terminate Confirmation Dialog */}
+      <Dialog open={isDeleteOpen} onClose={() => setIsDeleteOpen(false)}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Уволить сотрудника?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Вы уверены, что хотите перевести сотрудника «{fullName}» в статус TERMINATED (уволен)? Будет зафиксирована текущая дата увольнения и создана запись в аудит-логе.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setIsDeleteOpen(false)}>Отмена</Button>
+          <Button
+            onClick={() => deleteMutation.mutate()}
+            color="error"
+            variant="contained"
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Увольнение...' : 'Уволить'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

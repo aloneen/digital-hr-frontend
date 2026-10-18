@@ -25,3 +25,10 @@ export type LoginResponse = {
   email: string;
   departmentId?: number | null;
 };
+
+export type GoogleLoginRequest = {
+  idToken: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+};

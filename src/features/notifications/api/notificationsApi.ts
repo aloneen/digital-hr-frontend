@@ -22,4 +22,9 @@ export const notificationsApi = {
     const { data } = await apiClient.post<ApiResponse<void>>('/notifications/read-all');
     return data.data;
   },
+
+  sendNotification: async (payload: { employeeId?: number; userId?: number; title: string; message: string }) => {
+    const { data } = await apiClient.post<ApiResponse<void>>('/notifications/send', payload);
+    return data.data;
+  },
 };

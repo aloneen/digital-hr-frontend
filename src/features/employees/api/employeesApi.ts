@@ -1,6 +1,11 @@
 import apiClient from '../../../shared/api/client';
 import type { ApiResponse } from '../../../shared/types/api';
-import type { Employee, EmployeeCreateRequest, EmployeesPageResponse } from '../../../shared/types/employee';
+import type {
+  Employee,
+  EmployeeCreateRequest,
+  EmployeeUpdateRequest,
+  EmployeesPageResponse,
+} from '../../../shared/types/employee';
 
 export const employeesApi = {
   getAll: async (params?: Record<string, string | number | undefined>) => {
@@ -15,6 +20,16 @@ export const employeesApi = {
 
   create: async (payload: EmployeeCreateRequest) => {
     const { data } = await apiClient.post<ApiResponse<Employee>>('/employees', payload);
+    return data.data;
+  },
+
+  update: async (id: number, payload: EmployeeUpdateRequest) => {
+    const { data } = await apiClient.put<ApiResponse<Employee>>(`/employees/${id}`, payload);
+    return data.data;
+  },
+
+  delete: async (id: number) => {
+    const { data } = await apiClient.delete<ApiResponse<void>>(`/employees/${id}`);
     return data.data;
   },
 };

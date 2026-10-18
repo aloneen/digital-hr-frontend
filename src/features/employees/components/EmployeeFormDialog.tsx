@@ -8,9 +8,11 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import type { EmployeeCreateRequest, EmployeeStatus } from '../../../shared/types/employee';
+import { departmentsApi } from '../../departments/api/departmentsApi';
+import type { Employee, EmployeeCreateRequest, EmployeeStatus, EmployeeUpdateRequest } from '../../../shared/types/employee';
 
 const defaultValues: EmployeeCreateRequest = {
   firstName: '',
@@ -18,7 +20,7 @@ const defaultValues: EmployeeCreateRequest = {
   middleName: '',
   position: '',
   departmentId: 1,
-  city: '',
+  city: 'Алматы',
   status: 'ACTIVE',
   hireDate: new Date().toISOString().slice(0, 10),
   email: '',
@@ -27,13 +29,48 @@ const defaultValues: EmployeeCreateRequest = {
   iin: '',
 };
 
-export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
+interface EmployeeFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (payload: EmployeeCreateRequest) => Promise<void>;
-}) {
+  onSubmit: (payload: EmployeeCreateRequest | EmployeeUpdateRequest) => Promise<void>;
+  initialData?: Employee | null;
+}
+
+export default function EmployeeFormDialog({
+  open,
+  onClose,
+  onSubmit,
+  initialData,
+}: EmployeeFormDialogProps) {
   const { t } = useTranslation();
   const [form, setForm] = useState<EmployeeCreateRequest>(defaultValues);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: departments } = useQuery({
+    queryKey: ['departments-list'],
+    queryFn: () => departmentsApi.getAll(),
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        firstName: initialData.firstName || '',
+        lastName: initialData.lastName || '',
+        middleName: initialData.middleName || '',
+        position: initialData.position || '',
+        departmentId: initialData.departmentId || 1,
+        city: initialData.city || '',
+        status: initialData.status || 'ACTIVE',
+        hireDate: initialData.hireDate ? initialData.hireDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
+        email: initialData.email || '',
+        phone: initialData.phone || '',
+        birthDate: initialData.birthDate ? initialData.birthDate.slice(0, 10) : '',
+        iin: initialData.iin || '',
+      });
+    } else {
+      setForm(defaultValues);
+    }
+  }, [initialData, open]);
 
   const handleChange = <K extends keyof EmployeeCreateRequest>(field: K, value: EmployeeCreateRequest[K]) => {
     setForm((prev) => ({
@@ -43,23 +80,34 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
   };
 
   const handleSave = async () => {
-    await onSubmit({
-      ...form,
-      departmentId: Number(form.departmentId),
-      status: form.status ?? 'ACTIVE',
-    });
-    setForm(defaultValues);
-    onClose();
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.position.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        ...form,
+        departmentId: Number(form.departmentId),
+        status: form.status ?? 'ACTIVE',
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const isEdit = Boolean(initialData);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{t('employees.dialog.title')}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700 }}>
+        {isEdit ? 'Редактировать сотрудника' : t('employees.dialog.title')}
+      </DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ pt: 1 }}>
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               label={t('employees.dialog.firstName')}
+              required
               fullWidth
               value={form.firstName}
               onChange={(e) => handleChange('firstName', e.target.value)}
@@ -68,6 +116,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               label={t('employees.dialog.lastName')}
+              required
               fullWidth
               value={form.lastName}
               onChange={(e) => handleChange('lastName', e.target.value)}
@@ -85,20 +134,34 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               label={t('employees.dialog.position')}
+              required
               fullWidth
               value={form.position}
               onChange={(e) => handleChange('position', e.target.value)}
             />
           </Grid>
+
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
-              label={t('employees.dialog.departmentId')}
-              type="number"
+              select
+              label="Подразделение"
               fullWidth
-              value={form.departmentId}
+              required
+              value={form.departmentId || ''}
               onChange={(e) => handleChange('departmentId', Number(e.target.value))}
-            />
+            >
+              {departments && departments.length > 0 ? (
+                departments.map((dept) => (
+                  <MenuItem key={dept.id} value={dept.id}>
+                    {dept.name} ({dept.type})
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value={1}>Главный офис (HEAD_OFFICE)</MenuItem>
+              )}
+            </TextField>
           </Grid>
+
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               label={t('employees.dialog.city')}
@@ -116,9 +179,9 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
               value={form.status || 'ACTIVE'}
               onChange={(e) => handleChange('status', e.target.value as EmployeeStatus)}
             >
-              <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-              <MenuItem value="ON_LEAVE">ON_LEAVE</MenuItem>
-              <MenuItem value="TERMINATED">TERMINATED</MenuItem>
+              <MenuItem value="ACTIVE">ACTIVE (Активен)</MenuItem>
+              <MenuItem value="ON_LEAVE">ON_LEAVE (В отпуске)</MenuItem>
+              <MenuItem value="TERMINATED">TERMINATED (Уволен)</MenuItem>
             </TextField>
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
@@ -145,6 +208,7 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               label={t('employees.dialog.email')}
+              type="email"
               fullWidth
               value={form.email || ''}
               onChange={(e) => handleChange('email', e.target.value)}
@@ -168,10 +232,16 @@ export default function EmployeeFormDialog({ open, onClose, onSubmit }: {
           </Grid>
         </Grid>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t('employees.dialog.cancel')}</Button>
-        <Button onClick={handleSave} variant="contained">
-          {t('employees.dialog.save')}
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} disabled={isSubmitting}>
+          {t('employees.dialog.cancel')}
+        </Button>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={isSubmitting || !form.firstName.trim() || !form.lastName.trim()}
+        >
+          {isSubmitting ? 'Сохранение...' : isEdit ? 'Сохранить изменения' : t('employees.dialog.save')}
         </Button>
       </DialogActions>
     </Dialog>
