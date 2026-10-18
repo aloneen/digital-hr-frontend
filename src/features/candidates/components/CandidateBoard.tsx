@@ -25,7 +25,6 @@ import {
   MoreVertOutlined,
   NotesOutlined,
   PhoneOutlined,
-  SwapHorizOutlined,
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
@@ -239,33 +238,6 @@ export default function CandidateBoard({
 
   return (
     <Box>
-      {/* Drag & Drop Visual Hint */}
-      <Box
-        sx={{
-          mb: 2.5,
-          p: 1.5,
-          px: 2,
-          borderRadius: 2.5,
-          bgcolor: '#EBF6F0',
-          border: '1px solid rgba(22, 139, 72, 0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1.5,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <SwapHorizOutlined sx={{ color: '#168B48' }} />
-          <Typography variant="body2" sx={{ color: '#168B48', fontWeight: 600 }}>
-            {t('candidates.dragDropHint')}
-          </Typography>
-        </Box>
-        <Typography variant="caption" sx={{ color: '#11703A', fontWeight: 500 }}>
-          {t('candidates.totalCandidates')}: <strong>{localCandidates.length}</strong>
-        </Typography>
-      </Box>
-
       {/* Kanban Board Horizontal Track */}
       <Box
         sx={{
@@ -395,7 +367,7 @@ export default function CandidateBoard({
                           </Box>
 
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Tooltip title={t('candidates.dragDropHint')}>
+                            <Tooltip title="Перетащить">
                               <DragIndicatorOutlined sx={{ color: '#CBD5E1', cursor: 'grab', fontSize: 18, mr: 0.2 }} />
                             </Tooltip>
                             <IconButton
