@@ -10,24 +10,36 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
   InputAdornment,
   MenuItem,
+  Paper,
   Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
 import {
   Add as AddIcon,
+  CloudUploadOutlined as CloudUploadIcon,
+  DeleteOutlined as DeleteIcon,
+  LinkOutlined as LinkIcon,
+  PeopleOutlined as PeopleIcon,
+  PictureAsPdfOutlined as PdfIcon,
   Search as SearchIcon,
   WorkOutlined as WorkIcon,
-  PeopleOutlined as PeopleIcon,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { candidatesApi } from '../api/candidatesApi';
 import { vacanciesApi } from '../../vacancies/api/vacanciesApi';
 import CandidateBoard from '../components/CandidateBoard';
+import CandidateDetailDrawer from '../components/CandidateDetailDrawer';
+import {
+  fileToDataUrl,
+  formatFileSize,
+  saveResume,
+} from '../utils/resumeStorage';
 
 export default function CandidatesPage() {
   const { t } = useTranslation();
@@ -36,6 +48,7 @@ export default function CandidatesPage() {
   const [selectedVacancyId, setSelectedVacancyId] = useState<string>('1');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<number | null>(null);
 
   // New Candidate Form State
   const [formData, setFormData] = useState({
@@ -44,7 +57,12 @@ export default function CandidatesPage() {
     email: '',
     phone: '',
     notes: '',
+    resumeUrl: '',
   });
+
+  const [resumeMode, setResumeMode] = useState<'file' | 'url'>('file');
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
 
   const [toast, setToast] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -78,6 +96,12 @@ export default function CandidatesPage() {
     queryFn: () => candidatesApi.getByVacancy(vacancyNumber),
   });
 
+  // Derive currently selected candidate from candidates list
+  const selectedCandidate = useMemo(() => {
+    if (!selectedCandidateId) return null;
+    return candidates?.find((c) => c.id === selectedCandidateId) || null;
+  }, [candidates, selectedCandidateId]);
+
   // Filter candidates by search
   const filteredCandidates = useMemo(() => {
     if (!candidates) return [];
@@ -94,12 +118,49 @@ export default function CandidatesPage() {
 
   // Create candidate mutation
   const createMutation = useMutation({
-    mutationFn: (newCandidate: typeof formData & { vacancyId: number }) =>
-      candidatesApi.create(newCandidate),
+    mutationFn: async (payload: {
+      firstName: string;
+      lastName: string;
+      email?: string;
+      phone?: string;
+      notes?: string;
+      resumeUrl?: string;
+      vacancyId: number;
+      _fileDataUrl?: string | null;
+      _fileName?: string;
+      _fileSize?: number;
+      _fileType?: string;
+    }) => {
+      const { _fileDataUrl, _fileName, _fileSize, _fileType, ...apiPayload } = payload;
+      const createdCandidate = await candidatesApi.create(apiPayload);
+
+      // If user attached a file, save it to local IndexedDB/localStorage storage
+      if (_fileDataUrl && _fileName) {
+        await saveResume(`candidate_${createdCandidate.id}`, {
+          fileName: _fileName,
+          fileSize: _fileSize || 0,
+          fileType: _fileType || 'application/pdf',
+          dataUrl: _fileDataUrl,
+          candidateId: createdCandidate.id,
+        });
+
+        await saveResume(_fileName, {
+          fileName: _fileName,
+          fileSize: _fileSize || 0,
+          fileType: _fileType || 'application/pdf',
+          dataUrl: _fileDataUrl,
+          candidateId: createdCandidate.id,
+        });
+      }
+
+      return createdCandidate;
+    },
     onSuccess: (res) => {
       void queryClient.invalidateQueries({ queryKey: ['candidates', vacancyNumber] });
       setIsAddDialogOpen(false);
-      setFormData({ firstName: '', lastName: '', email: '', phone: '', notes: '' });
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', notes: '', resumeUrl: '' });
+      setResumeFile(null);
+      setSelectedCandidateId(res.id); // Automatically open the side drawer with the new candidate
       setToast({
         open: true,
         message: `${res.firstName} ${res.lastName} — ${t('candidates.createSuccess')}`,
@@ -116,13 +177,34 @@ export default function CandidatesPage() {
     },
   });
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName.trim() || !formData.lastName.trim()) return;
 
+    let resumeUrlToSend = formData.resumeUrl.trim() || undefined;
+    let fileDataUrl: string | null = null;
+
+    if (resumeMode === 'file' && resumeFile) {
+      try {
+        fileDataUrl = await fileToDataUrl(resumeFile);
+        resumeUrlToSend = resumeFile.name;
+      } catch (err) {
+        console.error('Failed to read file:', err);
+      }
+    }
+
     createMutation.mutate({
-      ...formData,
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim() || undefined,
+      phone: formData.phone.trim() || undefined,
+      notes: formData.notes.trim() || undefined,
+      resumeUrl: resumeUrlToSend,
       vacancyId: vacancyNumber,
+      _fileDataUrl: fileDataUrl,
+      _fileName: resumeFile?.name,
+      _fileSize: resumeFile?.size,
+      _fileType: resumeFile?.type,
     });
   };
 
@@ -146,14 +228,19 @@ export default function CandidatesPage() {
             {t('candidates.pageTitle')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Канбан-доска подбора персонала с поддержкой Drag & Drop
+            Канбан-доска подбора персонала с поддержкой резюме и детальным просмотром
           </Typography>
         </Box>
 
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setIsAddDialogOpen(true)}
+          onClick={() => {
+            setFormData({ firstName: '', lastName: '', email: '', phone: '', notes: '', resumeUrl: '' });
+            setResumeFile(null);
+            setResumeMode('file');
+            setIsAddDialogOpen(true);
+          }}
           sx={{
             bgcolor: '#168B48',
             '&:hover': { bgcolor: '#11703A' },
@@ -257,10 +344,26 @@ export default function CandidatesPage() {
           </Typography>
         </Box>
       ) : (
-        <CandidateBoard candidates={filteredCandidates} vacancyId={vacancyNumber} />
+        <CandidateBoard
+          candidates={filteredCandidates}
+          vacancyId={vacancyNumber}
+          onSelectCandidate={(c) => setSelectedCandidateId(c.id)}
+          selectedCandidateId={selectedCandidateId}
+        />
       )}
 
-      {/* Add Candidate Modal Dialog */}
+      {/* Candidate Right-Side Details Drawer ("маленькое окошко справа") */}
+      <CandidateDetailDrawer
+        candidate={selectedCandidate}
+        open={Boolean(selectedCandidateId && selectedCandidate)}
+        onClose={() => setSelectedCandidateId(null)}
+        vacancyTitle={selectedVacancy?.title}
+        onStageChange={() => {
+          void queryClient.invalidateQueries({ queryKey: ['candidates', vacancyNumber] });
+        }}
+      />
+
+      {/* Add Candidate Modal Dialog with Resume Upload */}
       <Dialog
         open={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
@@ -280,6 +383,7 @@ export default function CandidatesPage() {
 
           <DialogContent sx={{ pt: 1 }}>
             <Grid container spacing={2}>
+              {/* First Name & Last Name */}
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -300,6 +404,8 @@ export default function CandidatesPage() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, lastName: e.target.value }))}
                 />
               </Grid>
+
+              {/* Email & Phone */}
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -319,16 +425,187 @@ export default function CandidatesPage() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
                 />
               </Grid>
+
+              {/* Notes */}
               <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   multiline
-                  rows={3}
+                  rows={2}
                   label={t('candidates.notes')}
                   placeholder="Опыт работы, источник отклика, навыки..."
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                 />
+              </Grid>
+
+              {/* RESUME UPLOAD SECTION */}
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ mt: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#374151' }}>
+                      Резюме кандидата
+                    </Typography>
+
+                    {/* Mode Toggle Buttons */}
+                    <Box sx={{ display: 'flex', gap: 0.75 }}>
+                      <Button
+                        type="button"
+                        size="small"
+                        onClick={() => setResumeMode('file')}
+                        variant={resumeMode === 'file' ? 'contained' : 'outlined'}
+                        sx={{
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          py: 0.3,
+                          px: 1.5,
+                          borderRadius: 2,
+                          bgcolor: resumeMode === 'file' ? '#168B48' : 'transparent',
+                          borderColor: '#D1D5DB',
+                          color: resumeMode === 'file' ? '#FFFFFF' : '#4B5563',
+                          '&:hover': {
+                            bgcolor: resumeMode === 'file' ? '#11703A' : '#F3F4F6',
+                            borderColor: '#9CA3AF',
+                          },
+                        }}
+                      >
+                        Загрузить файл
+                      </Button>
+                      <Button
+                        type="button"
+                        size="small"
+                        onClick={() => setResumeMode('url')}
+                        variant={resumeMode === 'url' ? 'contained' : 'outlined'}
+                        sx={{
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          py: 0.3,
+                          px: 1.5,
+                          borderRadius: 2,
+                          bgcolor: resumeMode === 'url' ? '#168B48' : 'transparent',
+                          borderColor: '#D1D5DB',
+                          color: resumeMode === 'url' ? '#FFFFFF' : '#4B5563',
+                          '&:hover': {
+                            bgcolor: resumeMode === 'url' ? '#11703A' : '#F3F4F6',
+                            borderColor: '#9CA3AF',
+                          },
+                        }}
+                      >
+                        Указать ссылку
+                      </Button>
+                    </Box>
+                  </Box>
+
+                  {resumeMode === 'file' ? (
+                    <Box>
+                      {resumeFile ? (
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 2,
+                            borderRadius: 2.5,
+                            border: '1.5px solid #168B48',
+                            bgcolor: '#EBF6F0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, overflow: 'hidden' }}>
+                            <PdfIcon sx={{ color: '#168B48', fontSize: 28, flexShrink: 0 }} />
+                            <Box sx={{ overflow: 'hidden' }}>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 700,
+                                  color: '#111827',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {resumeFile.name}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#6B7280' }}>
+                                {formatFileSize(resumeFile.size)} · Готово к сохранению
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <IconButton size="small" onClick={() => setResumeFile(null)} sx={{ color: '#6B7280' }}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Paper>
+                      ) : (
+                        <Box
+                          component="label"
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDraggingFile(true);
+                          }}
+                          onDragLeave={() => setIsDraggingFile(false)}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            setIsDraggingFile(false);
+                            if (e.dataTransfer.files?.[0]) {
+                              setResumeFile(e.dataTransfer.files[0]);
+                            }
+                          }}
+                          sx={{
+                            border: isDraggingFile ? '2px dashed #168B48' : '2px dashed #D1D5DB',
+                            bgcolor: isDraggingFile ? '#EBF6F0' : '#F9FAFB',
+                            borderRadius: 2.5,
+                            p: 2.5,
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            display: 'block',
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              borderColor: '#168B48',
+                              bgcolor: '#F3F9F5',
+                            },
+                          }}
+                        >
+                          <input
+                            type="file"
+                            hidden
+                            accept=".pdf,.doc,.docx,.txt,image/*"
+                            onChange={(e) => {
+                              if (e.target.files?.[0]) {
+                                setResumeFile(e.target.files[0]);
+                              }
+                            }}
+                          />
+                          <CloudUploadIcon sx={{ fontSize: 32, color: '#168B48', mb: 0.5 }} />
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#1F2937' }}>
+                            Нажмите для выбора или перетащите файл резюме
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#6B7280' }}>
+                            Поддерживаются PDF, DOC, DOCX, TXT (до 10 МБ)
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  ) : (
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="https://hh.kz/resume/... или ссылка на Google Диск"
+                      value={formData.resumeUrl}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, resumeUrl: e.target.value }))}
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LinkIcon sx={{ color: '#9CA3AF', fontSize: 20 }} />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  )}
+                </Box>
               </Grid>
             </Grid>
           </DialogContent>

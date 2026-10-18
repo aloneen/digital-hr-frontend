@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { employeesApi } from '../api/employeesApi';
 import EmployeeFormDialog from '../components/EmployeeFormDialog';
+import { exportEmployeesToCsv } from '../utils/exportEmployees';
 
 const employeeStatusOptions = ['ACTIVE', 'ON_LEAVE', 'TERMINATED'];
 
@@ -40,8 +41,31 @@ export default function EmployeesPage() {
     },
   });
 
-  const handleCreateEmployee = async (payload: Parameters<typeof employeesApi.create>[0]) => {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleCreateEmployee = async (payload: any) => {
     await createEmployeeMutation.mutateAsync(payload);
+  };
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const allData = await employeesApi.getAll({
+        search: search || undefined,
+        city: city || undefined,
+        status: status || undefined,
+        page: 0,
+        size: 1000,
+        sort: 'lastName,asc',
+      });
+      const listToExport = allData?.content && allData.content.length > 0 ? allData.content : employees;
+      exportEmployeesToCsv(listToExport);
+    } catch (err) {
+      console.error('Export error:', err);
+      exportEmployeesToCsv(employees);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const params = useMemo(
@@ -79,8 +103,14 @@ export default function EmployeesPage() {
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button variant='outlined' startIcon={<DownloadIcon />} sx={{ minWidth: 120 }}>
-            Export
+          <Button
+            variant='outlined'
+            startIcon={<DownloadIcon />}
+            onClick={handleExport}
+            disabled={isExporting}
+            sx={{ minWidth: 120 }}
+          >
+            {isExporting ? 'Exporting...' : 'Export'}
           </Button>
           <Button variant='contained' startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
             Add New Employee

@@ -1,5 +1,14 @@
-import { Box, Button, Divider, Typography } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import { Box, Button, Divider, Typography, CircularProgress, Alert } from '@mui/material';
 import { Apple, Facebook } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 function GoogleIcon() {
   return (
@@ -25,8 +34,81 @@ function GoogleIcon() {
 }
 
 export default function SocialLoginButtons() {
+  const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  const clientId =
+    import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+    '179402934896-66819dafj6pcbkkmd011hoodoib942m5.apps.googleusercontent.com';
+
+  useEffect(() => {
+    const handleCredentialResponse = async (response: { credential: string }) => {
+      if (!response.credential) return;
+      setLoading(true);
+      setErrorMsg('');
+      try {
+        await loginWithGoogle({ idToken: response.credential });
+        navigate('/');
+      } catch (err) {
+        setErrorMsg(err instanceof Error ? err.message : 'Google authentication failed');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const initGsi = () => {
+      if (window.google?.accounts?.id && googleBtnRef.current) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleCredentialResponse,
+          });
+
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: 'outline',
+            size: 'large',
+            type: 'icon',
+            shape: 'rectangular',
+            width: '100%',
+          });
+        } catch (e) {
+          console.warn('Google Identity initialization error', e);
+        }
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGsi();
+    } else {
+      const timer = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          initGsi();
+          clearInterval(timer);
+        }
+      }, 300);
+      return () => clearInterval(timer);
+    }
+  }, [clientId, loginWithGoogle, navigate]);
+
+  const handleManualClick = () => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    } else {
+      setErrorMsg('Google Services are loading or blocked. Please check your connection.');
+    }
+  };
+
   return (
     <Box sx={{ width: '100%', mt: 3 }}>
+      {errorMsg && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMsg}
+        </Alert>
+      )}
+
       <Box sx={{ display: 'flex', alignItems: 'center', my: 2.5 }}>
         <Divider sx={{ flex: 1, borderColor: '#E5E7EB' }} />
         <Typography variant="caption" sx={{ px: 2, color: '#9CA3AF', fontWeight: 600 }}>
@@ -53,22 +135,47 @@ export default function SocialLoginButtons() {
           <Facebook sx={{ fontSize: 22 }} />
         </Button>
 
-        {/* Google */}
-        <Button
-          fullWidth
-          variant="outlined"
-          sx={{
-            bgcolor: '#FFFFFF',
-            borderColor: '#E5E7EB',
-            '&:hover': { bgcolor: '#F9FAFB', borderColor: '#D1D5DB' },
-            height: 44,
-            borderRadius: 2,
-            minWidth: 0,
-            boxShadow: 'none',
-          }}
-        >
-          <GoogleIcon />
-        </Button>
+        {/* Google Container with native button overlay */}
+        <Box sx={{ flex: 1, position: 'relative', height: 44 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={handleManualClick}
+            disabled={loading}
+            sx={{
+              bgcolor: '#FFFFFF',
+              borderColor: '#E5E7EB',
+              '&:hover': { bgcolor: '#F9FAFB', borderColor: '#D1D5DB' },
+              height: 44,
+              borderRadius: 2,
+              minWidth: 0,
+              boxShadow: 'none',
+              width: '100%',
+            }}
+          >
+            {loading ? <CircularProgress size={20} /> : <GoogleIcon />}
+          </Button>
+
+          {/* Hidden GSI button container overlay */}
+          <Box
+            ref={googleBtnRef}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              opacity: 0.001,
+              overflow: 'hidden',
+              cursor: 'pointer',
+              zIndex: 2,
+              '& iframe': {
+                width: '100% !important',
+                height: '100% !important',
+              },
+            }}
+          />
+        </Box>
 
         {/* Apple */}
         <Button

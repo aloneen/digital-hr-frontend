@@ -8,13 +8,14 @@ import {
   type ReactNode,
 } from 'react';
 import apiClient from '../../../shared/api/client';
-import type { ApiResponse, AuthUser, LoginRequest, LoginResponse } from '../../../shared/types/api';
+import type { ApiResponse, AuthUser, GoogleLoginRequest, LoginRequest, LoginResponse } from '../../../shared/types/api';
 
 type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (payload: LoginRequest) => Promise<void>;
+  loginWithGoogle: (payload: GoogleLoginRequest) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 };
@@ -102,6 +103,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [writeUserSession]);
 
+  const loginWithGoogle = useCallback(async (payload: GoogleLoginRequest) => {
+    try {
+      const { data } = await apiClient.post<ApiResponse<LoginResponse>>('/auth/google', payload);
+
+      if (!data.success || !data.data?.token) {
+        throw new Error(data.message || 'Google login failed');
+      }
+
+      const nextUser: AuthUser = {
+        id: data.data.userId,
+        email: data.data.email,
+        role: data.data.role,
+        departmentId: data.data.departmentId ?? null,
+        employeeId: null,
+      };
+
+      writeUserSession(nextUser, data.data.token);
+
+      const meResponse = await apiClient.get<ApiResponse<AuthUser>>('/auth/me');
+      if (meResponse.data.success && meResponse.data.data) {
+        writeUserSession(meResponse.data.data);
+      }
+    } catch (err: any) {
+      const serverMessage = err?.response?.data?.message;
+      if (serverMessage) {
+        throw new Error(serverMessage);
+      }
+      throw err;
+    }
+  }, [writeUserSession]);
+
   const logout = useCallback(() => {
     localStorage.removeItem('digital-hr-token');
     localStorage.removeItem('digital-hr-user');
@@ -115,10 +147,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       isLoading,
       login,
+      loginWithGoogle,
       logout,
       refreshUser,
     }),
-    [isLoading, login, logout, refreshUser, user],
+    [isLoading, login, loginWithGoogle, logout, refreshUser, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

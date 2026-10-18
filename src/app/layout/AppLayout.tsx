@@ -23,7 +23,6 @@ import {
   AccountCircle,
   Analytics,
   Assignment,
-  BarChart,
   Business,
   Groups,
   Logout,
@@ -52,13 +51,12 @@ const employeeMenuItems: NavMenuItem[] = [
 ];
 
 const hrMenuItems: NavMenuItem[] = [
-  { label: 'nav.dashboard', to: '/dashboard', icon: <BarChart /> },
+  { label: 'nav.analytics', to: '/analytics', icon: <Analytics /> },
   { label: 'nav.employees', to: '/employees', icon: <Groups /> },
   { label: 'nav.departments', to: '/departments', icon: <Business /> },
   { label: 'nav.vacancies', to: '/vacancies', icon: <Work /> },
   { label: 'nav.candidates', to: '/candidates', icon: <Person /> },
   { label: 'nav.onboarding', to: '/onboarding', icon: <School /> },
-  { label: 'nav.analytics', to: '/analytics', icon: <Analytics /> },
 ];
 
 const drawerWidth = 272;

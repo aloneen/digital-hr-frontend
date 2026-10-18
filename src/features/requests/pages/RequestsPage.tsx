@@ -29,7 +29,6 @@ import {
   HelpOutlined,
   HourglassEmpty,
   LocalHospital,
-  SyncAlt,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -174,34 +173,6 @@ export default function RequestsPage() {
           {t('requests.submitNew')}
         </Button>
       </Box>
-
-      <Card sx={{ mb: 3, p: 2, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: 'center',
-            gap: 2,
-            justifyContent: 'space-between',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <SyncAlt sx={{ color: '#16a34a' }} />
-            <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#166534' }}>
-                {t('requests.integrationTitle')}
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#15803d' }}>
-                {t('requests.integrationSubtitle')}
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Chip label="1С:ЗУП 8.3 Ready" size="small" sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 600 }} />
-            <Chip label="Documentolog API" size="small" sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 600 }} />
-          </Box>
-        </Box>
-      </Card>
 
       {actionSuccess && (
         <Alert severity="success" onClose={() => setActionSuccess(null)} sx={{ mb: 3 }}>

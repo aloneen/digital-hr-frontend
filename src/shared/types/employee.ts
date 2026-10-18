@@ -35,6 +35,8 @@ export type EmployeeCreateRequest = {
   iin?: string | null;
 };
 
+export type EmployeeUpdateRequest = Partial<EmployeeCreateRequest>;
+
 export type EmployeesPageResponse = {
   content: Employee[];
   page: number;

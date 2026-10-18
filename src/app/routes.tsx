@@ -7,7 +7,6 @@ import TwoStepVerificationPage from '../features/auth/pages/TwoStepVerificationP
 import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
 import AuthSuccessPage from '../features/auth/pages/AuthSuccessPage';
 
-import DashboardPage from '../features/dashboard/pages/DashboardPage';
 import EmployeesPage from '../features/employees/pages/EmployeesPage';
 import EmployeeDetailPage from '../features/employees/pages/EmployeeDetailPage';
 import DepartmentsPage from '../features/departments/pages/DepartmentsPage';
@@ -30,7 +29,7 @@ function HomeRedirect() {
   if (user?.role === 'EMPLOYEE') {
     return <Navigate to="/profile" replace />;
   }
-  return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/analytics" replace />;
 }
 
 export default function AppRoutes() {
@@ -55,7 +54,7 @@ export default function AppRoutes() {
           <Route path="/ai-assistant" element={<AiJanaPage />} />
 
           {/* Administrative / HR routes */}
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<Navigate to="/analytics" replace />} />
           <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/employees/:id" element={<EmployeeDetailPage />} />
           <Route path="/departments" element={<DepartmentsPage />} />

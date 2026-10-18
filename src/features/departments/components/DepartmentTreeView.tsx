@@ -2,9 +2,15 @@ import {
   Box,
   Card,
   CardContent,
+  IconButton,
   List,
+  Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
+import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useTranslation } from 'react-i18next';
 import type { DepartmentTree } from '../../../shared/types/department';
 
@@ -15,7 +21,21 @@ const departmentColors: Record<string, string> = {
   FRANCHISE: '#3b82f6',
 };
 
-function renderTree(nodes: DepartmentTree[], level = 0, t: (key: string) => string) {
+interface DepartmentTreeViewProps {
+  tree: DepartmentTree[];
+  onAddChild?: (parentDept: DepartmentTree) => void;
+  onEdit?: (dept: DepartmentTree) => void;
+  onDelete?: (dept: DepartmentTree) => void;
+}
+
+function renderTree(
+  nodes: DepartmentTree[],
+  level = 0,
+  t: (key: string) => string,
+  onAddChild?: (parentDept: DepartmentTree) => void,
+  onEdit?: (dept: DepartmentTree) => void,
+  onDelete?: (dept: DepartmentTree) => void,
+) {
   return nodes.map((node) => {
     const accent = departmentColors[node.type] || '#64748b';
     const childCount = node.children?.length ?? 0;
@@ -36,11 +56,12 @@ function renderTree(nodes: DepartmentTree[], level = 0, t: (key: string) => stri
               alignItems: 'center',
               gap: 1.5,
               py: 1.2,
-              px: level === 0 ? 0 : 1,
+              px: level === 0 ? 1 : 1.5,
+              borderRadius: 2,
               borderBottom: '1px solid rgba(148, 163, 184, 0.16)',
               transition: 'all 0.15s ease',
               '&:hover': {
-                backgroundColor: 'rgba(15, 23, 42, 0.015)',
+                backgroundColor: 'rgba(15, 23, 42, 0.025)',
               },
             }}
           >
@@ -59,10 +80,10 @@ function renderTree(nodes: DepartmentTree[], level = 0, t: (key: string) => stri
               <Typography
                 variant="h6"
                 sx={{
-                  fontWeight: 500,
-                  letterSpacing: '-0.03em',
+                  fontWeight: 600,
+                  letterSpacing: '-0.02em',
                   lineHeight: 1.3,
-                  fontSize: { xs: '1.05rem', md: '1.25rem' },
+                  fontSize: { xs: '1.05rem', md: '1.15rem' },
                   color: '#111827',
                 }}
               >
@@ -86,8 +107,8 @@ function renderTree(nodes: DepartmentTree[], level = 0, t: (key: string) => stri
                 fontWeight: 600,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
-                px: 0.8,
-                py: 0.35,
+                px: 1,
+                py: 0.4,
                 borderRadius: 999,
                 border: `1px solid ${accent}44`,
                 backgroundColor: `${accent}12`,
@@ -96,12 +117,52 @@ function renderTree(nodes: DepartmentTree[], level = 0, t: (key: string) => stri
             >
               {node.type}
             </Typography>
+
+            {/* Actions for this department */}
+            <Stack direction="row" spacing={0.5} sx={{ ml: 1, flexShrink: 0 }}>
+              {onAddChild && (
+                <Tooltip title="Добавить подраздел (+)">
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    onClick={() => onAddChild(node)}
+                    sx={{ p: 0.75 }}
+                  >
+                    <AddCircleOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {onEdit && (
+                <Tooltip title="Редактировать">
+                  <IconButton
+                    size="small"
+                    color="default"
+                    onClick={() => onEdit(node)}
+                    sx={{ p: 0.75 }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {onDelete && (
+                <Tooltip title="Удалить / Деактивировать">
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => onDelete(node)}
+                    sx={{ p: 0.75 }}
+                  >
+                    <DeleteOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
           </Box>
         </Box>
 
         {node.children && node.children.length > 0 && (
           <Box sx={{ mt: 0.2, ml: level === 0 ? 1.2 : 2.4 }}>
-            {renderTree(node.children, level + 1, t)}
+            {renderTree(node.children, level + 1, t, onAddChild, onEdit, onDelete)}
           </Box>
         )}
       </Box>
@@ -109,7 +170,12 @@ function renderTree(nodes: DepartmentTree[], level = 0, t: (key: string) => stri
   });
 }
 
-export default function DepartmentTreeView({ tree }: { tree: DepartmentTree[] }) {
+export default function DepartmentTreeView({
+  tree,
+  onAddChild,
+  onEdit,
+  onDelete,
+}: DepartmentTreeViewProps) {
   const { t } = useTranslation();
 
   return (
@@ -126,7 +192,7 @@ export default function DepartmentTreeView({ tree }: { tree: DepartmentTree[] })
           variant="h5"
           sx={{
             mb: 2.25,
-            fontWeight: 500,
+            fontWeight: 600,
             letterSpacing: '-0.04em',
             color: '#111827',
           }}
@@ -134,8 +200,8 @@ export default function DepartmentTreeView({ tree }: { tree: DepartmentTree[] })
           {t('departments.organizationTree')}
         </Typography>
 
-        <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-          {renderTree(tree, 0, t)}
+        <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          {renderTree(tree, 0, t, onAddChild, onEdit, onDelete)}
         </List>
       </CardContent>
     </Card>

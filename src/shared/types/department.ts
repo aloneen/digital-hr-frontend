@@ -15,3 +15,18 @@ export type Department = {
 export type DepartmentTree = Department & {
   children: DepartmentTree[];
 };
+
+export type DepartmentCreateRequest = {
+  name: string;
+  type: DepartmentType;
+  parentId?: number | null;
+  city?: string;
+};
+
+export type DepartmentUpdateRequest = {
+  name?: string;
+  type?: DepartmentType;
+  parentId?: number | null;
+  city?: string;
+  isActive?: boolean;
+};

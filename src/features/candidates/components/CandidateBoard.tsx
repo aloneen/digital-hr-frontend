@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   Chip,
+  Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -16,16 +17,17 @@ import {
   Typography,
 } from '@mui/material';
 import {
+  AssignmentIndOutlined,
+  DescriptionOutlined,
   DragIndicatorOutlined,
   EmailOutlined,
   FiberManualRecord,
   MoreVertOutlined,
   NotesOutlined,
   PhoneOutlined,
-  SwapHorizOutlined,
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { candidatesApi } from '../api/candidatesApi';
 import type { Candidate, CandidateStage } from '../../../shared/types/candidate';
@@ -109,15 +111,23 @@ function getAvatarColor(id: number) {
 type CandidateBoardProps = {
   candidates: Candidate[];
   vacancyId?: number;
+  onSelectCandidate?: (candidate: Candidate) => void;
+  selectedCandidateId?: number | null;
 };
 
-export default function CandidateBoard({ candidates, vacancyId }: CandidateBoardProps) {
+export default function CandidateBoard({
+  candidates,
+  vacancyId,
+  onSelectCandidate,
+  selectedCandidateId,
+}: CandidateBoardProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [localCandidates, setLocalCandidates] = useState<Candidate[]>(candidates);
   const [draggingId, setDraggingId] = useState<number | null>(null);
   const [dragOverStage, setDragOverStage] = useState<CandidateStage | null>(null);
+  const dragMovedRef = useRef(false);
 
   // Quick menu state
   const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement; candidate: Candidate } | null>(null);
@@ -172,6 +182,7 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, candidate: Candidate) => {
+    dragMovedRef.current = true;
     e.dataTransfer.setData(
       'text/plain',
       JSON.stringify({ candidateId: candidate.id, sourceStage: candidate.stage })
@@ -183,6 +194,9 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
   const handleDragEnd = () => {
     setDraggingId(null);
     setDragOverStage(null);
+    setTimeout(() => {
+      dragMovedRef.current = false;
+    }, 120);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, stage: CandidateStage) => {
@@ -224,33 +238,6 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
 
   return (
     <Box>
-      {/* Drag & Drop Visual Hint */}
-      <Box
-        sx={{
-          mb: 2.5,
-          p: 1.5,
-          px: 2,
-          borderRadius: 2.5,
-          bgcolor: '#EBF6F0',
-          border: '1px solid rgba(22, 139, 72, 0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1.5,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <SwapHorizOutlined sx={{ color: '#168B48' }} />
-          <Typography variant="body2" sx={{ color: '#168B48', fontWeight: 600 }}>
-            {t('candidates.dragDropHint')}
-          </Typography>
-        </Box>
-        <Typography variant="caption" sx={{ color: '#11703A', fontWeight: 500 }}>
-          {t('candidates.totalCandidates')}: <strong>{localCandidates.length}</strong>
-        </Typography>
-      </Box>
-
       {/* Kanban Board Horizontal Track */}
       <Box
         sx={{
@@ -321,6 +308,7 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
               <Stack spacing={1.5} sx={{ flex: 1 }}>
                 {stageCandidates.map((candidate) => {
                   const isDragging = draggingId === candidate.id;
+                  const isSelected = selectedCandidateId === candidate.id;
                   const initials = `${candidate.firstName?.[0] || ''}${candidate.lastName?.[0] || ''}`.toUpperCase();
 
                   return (
@@ -329,20 +317,26 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
                       draggable
                       onDragStart={(e) => handleDragStart(e, candidate)}
                       onDragEnd={handleDragEnd}
+                      onClick={() => {
+                        if (!dragMovedRef.current && onSelectCandidate) {
+                          onSelectCandidate(candidate);
+                        }
+                      }}
                       sx={{
-                        cursor: 'grab',
-                        '&:active': { cursor: 'grabbing' },
+                        cursor: isDragging ? 'grabbing' : 'pointer',
                         opacity: isDragging ? 0.35 : 1,
                         transform: isDragging ? 'scale(0.96)' : 'none',
-                        border: '1px solid #E5E7EB',
+                        border: isSelected ? '2px solid #168B48' : '1px solid #E5E7EB',
                         borderRadius: 2.5,
-                        bgcolor: '#FFFFFF',
-                        boxShadow: '0 2px 6px rgba(15, 23, 42, 0.04)',
-                        transition: 'transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease',
+                        bgcolor: isSelected ? '#F4FBF7' : '#FFFFFF',
+                        boxShadow: isSelected
+                          ? '0 6px 18px rgba(22, 139, 72, 0.16)'
+                          : '0 2px 6px rgba(15, 23, 42, 0.04)',
+                        transition: 'transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.15s ease',
                         '&:hover': {
                           boxShadow: '0 8px 18px rgba(15, 23, 42, 0.08)',
                           transform: 'translateY(-2px)',
-                          borderColor: '#D1D5DB',
+                          borderColor: isSelected ? '#168B48' : '#168B48',
                         },
                       }}
                     >
@@ -373,7 +367,7 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
                           </Box>
 
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Tooltip title={t('candidates.dragDropHint')}>
+                            <Tooltip title="Перетащить">
                               <DragIndicatorOutlined sx={{ color: '#CBD5E1', cursor: 'grab', fontSize: 18, mr: 0.2 }} />
                             </Tooltip>
                             <IconButton
@@ -436,6 +430,23 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
                               </Typography>
                             </Box>
                           )}
+
+                          {candidate.resumeUrl && (
+                            <Box sx={{ mt: 0.75, display: 'flex', alignItems: 'center' }}>
+                              <Chip
+                                size="small"
+                                icon={<DescriptionOutlined sx={{ fontSize: '13px !important', color: '#168B48 !important' }} />}
+                                label="Резюме"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  bgcolor: '#E8F5EE',
+                                  color: '#168B48',
+                                }}
+                              />
+                            </Box>
+                          )}
                         </Box>
                       </CardContent>
                     </Card>
@@ -494,10 +505,26 @@ export default function CandidateBoard({ candidates, vacancyId }: CandidateBoard
         onClose={() => setMenuAnchor(null)}
         slotProps={{
           paper: {
-            sx: { borderRadius: 2, minWidth: 190, boxShadow: '0 10px 25px rgba(15,23,42,0.1)' },
+            sx: { borderRadius: 2, minWidth: 200, boxShadow: '0 10px 25px rgba(15,23,42,0.1)' },
           },
         }}
       >
+        <MenuItem
+          onClick={() => {
+            if (menuAnchor && onSelectCandidate) {
+              onSelectCandidate(menuAnchor.candidate);
+              setMenuAnchor(null);
+            }
+          }}
+          sx={{ py: 1, fontSize: '0.85rem', fontWeight: 700, color: '#168B48' }}
+        >
+          <ListItemIcon sx={{ minWidth: 26 }}>
+            <AssignmentIndOutlined sx={{ fontSize: 18, color: '#168B48' }} />
+          </ListItemIcon>
+          <ListItemText primary="Карточка кандидата" />
+        </MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+
         <Typography variant="caption" sx={{ px: 2, py: 0.5, fontWeight: 700, color: '#9CA3AF', display: 'block' }}>
           {t('candidates.changeStage')}
         </Typography>
