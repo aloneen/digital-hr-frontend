@@ -721,7 +721,7 @@ export default function CandidateDetailDrawer({
                   Резюме пока не прикреплено
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#9CA3AF', display: 'block', mb: 2 }}>
-                  Вы можете загрузить PDF-файл, указать ссылку на резюме или просмотреть профиль
+                  Вы можете загрузить файл резюме (PDF, DOCX, TXT) или указать ссылку
                 </Typography>
 
                 <Stack direction="row" spacing={1} useFlexGap sx={{ justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -757,22 +757,6 @@ export default function CandidateDetailDrawer({
                     }}
                   >
                     Ссылка
-                  </Button>
-
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<ViewIcon />}
-                    onClick={() => setIsPreviewOpen(true)}
-                    sx={{
-                      borderColor: '#168B48',
-                      color: '#168B48',
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      borderRadius: 2,
-                    }}
-                  >
-                    Профиль CV
                   </Button>
                 </Stack>
 

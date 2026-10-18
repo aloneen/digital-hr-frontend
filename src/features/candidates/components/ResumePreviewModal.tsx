@@ -9,24 +9,23 @@ import {
   Divider,
   IconButton,
   Paper,
-  Stack,
   Typography,
 } from '@mui/material';
 import {
   Close as CloseIcon,
+  DescriptionOutlined as DocumentIcon,
   DownloadOutlined as DownloadIcon,
   EmailOutlined as EmailIcon,
-  LocationOnOutlined as LocationIcon,
   OpenInNewOutlined as OpenInNewIcon,
   PhoneOutlined as PhoneIcon,
   PrintOutlined as PrintIcon,
-  SchoolOutlined as SchoolIcon,
+  PictureAsPdfOutlined as PdfIcon,
   WorkOutlineOutlined as WorkIcon,
 } from '@mui/icons-material';
 import type { Candidate } from '../../../shared/types/candidate';
 import {
   downloadResumeFile,
-  getStructuredCvForCandidate,
+  formatFileSize,
   type StoredResume,
 } from '../utils/resumeStorage';
 
@@ -47,7 +46,6 @@ export default function ResumePreviewModal({
 }: ResumePreviewModalProps) {
   if (!candidate) return null;
 
-  const cv = getStructuredCvForCandidate(candidate, vacancyTitle);
   const isPdf = storedResume?.fileType?.includes('pdf') || storedResume?.fileName?.endsWith('.pdf');
   const isImage =
     storedResume?.fileType?.startsWith('image/') ||
@@ -95,7 +93,7 @@ export default function ResumePreviewModal({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827' }}>
-            Резюме кандидата
+            {storedResume ? 'Просмотр резюме' : 'Данные кандидата'}
           </Typography>
           <Chip
             size="small"
@@ -186,8 +184,64 @@ export default function ResumePreviewModal({
               Открыть в новой вкладке
             </Button>
           </Paper>
+        ) : storedResume?.dataUrl ? (
+          /* For other uploaded files like DOCX, DOC, TXT */
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              bgcolor: '#FFFFFF',
+              borderRadius: 3,
+              border: '1px solid #E5E7EB',
+            }}
+          >
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: 3,
+                bgcolor: '#E8F5EE',
+                color: '#168B48',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 2,
+              }}
+            >
+              {storedResume.fileName?.endsWith('.pdf') ? (
+                <PdfIcon sx={{ fontSize: 36 }} />
+              ) : (
+                <DocumentIcon sx={{ fontSize: 36 }} />
+              )}
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 0.5 }}>
+              {storedResume.fileName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              {formatFileSize(storedResume.fileSize)} · Документ резюме кандидата
+            </Typography>
+
+            <Button
+              variant="contained"
+              startIcon={<DownloadIcon />}
+              onClick={handleDownload}
+              sx={{
+                bgcolor: '#168B48',
+                '&:hover': { bgcolor: '#11703A' },
+                textTransform: 'none',
+                fontWeight: 700,
+                borderRadius: 2,
+                px: 3,
+                py: 1,
+              }}
+            >
+              Скачать файл резюме
+            </Button>
+          </Paper>
         ) : (
-          /* Formatted JanaPost CV Card */
+          /* Actual Candidate Data only (No fake skills, no fake companies, no fake education) */
           <Paper
             elevation={0}
             sx={{
@@ -198,7 +252,7 @@ export default function ResumePreviewModal({
               boxShadow: '0 4px 12px rgba(15, 23, 42, 0.05)',
             }}
           >
-            {/* CV Header */}
+            {/* Header with real candidate details */}
             <Box
               sx={{
                 display: 'flex',
@@ -212,38 +266,46 @@ export default function ResumePreviewModal({
             >
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>
-                  {cv.fullName}
+                  {candidate.firstName} {candidate.lastName}
                 </Typography>
-                <Typography variant="h6" sx={{ color: '#168B48', fontWeight: 700, mt: 0.5 }}>
-                  {cv.position}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75 }}>
+                  <WorkIcon sx={{ fontSize: 18, color: '#168B48' }} />
+                  <Typography variant="subtitle1" sx={{ color: '#168B48', fontWeight: 700 }}>
+                    {vacancyTitle || `Вакансия #${candidate.vacancyId}`}
+                  </Typography>
+                </Box>
               </Box>
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, alignItems: { sm: 'flex-end' } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <PhoneIcon sx={{ fontSize: 16, color: '#168B48' }} />
                   <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151' }}>
-                    {cv.phone}
+                    {candidate.phone || 'Телефон не указан'}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <EmailIcon sx={{ fontSize: 16, color: '#168B48' }} />
                   <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151' }}>
-                    {cv.email}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocationIcon sx={{ fontSize: 16, color: '#6B7280' }} />
-                  <Typography variant="caption" sx={{ color: '#6B7280' }}>
-                    {cv.location}
+                    {candidate.email || 'Email не указан'}
                   </Typography>
                 </Box>
               </Box>
             </Box>
 
-            {/* About / Notes section */}
+            {/* Notes / HR comment if provided */}
             <Box sx={{ my: 3 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1F2937', mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>
-                О кандидате / Заметки HR
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 800,
+                  color: '#1F2937',
+                  mb: 1,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontSize: '0.8rem',
+                }}
+              >
+                Заметки / Информация при создании
               </Typography>
               <Paper
                 elevation={0}
@@ -254,84 +316,37 @@ export default function ResumePreviewModal({
                   borderRadius: 2,
                 }}
               >
-                <Typography variant="body2" sx={{ color: '#4B5563', lineHeight: 1.6 }}>
-                  {cv.about}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: candidate.notes ? '#374151' : '#9CA3AF',
+                    fontStyle: candidate.notes ? 'normal' : 'italic',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {candidate.notes || 'Заметки не были указаны при создании кандидата.'}
                 </Typography>
               </Paper>
             </Box>
 
             <Divider sx={{ my: 2.5 }} />
 
-            {/* Key Skills */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1F2937', mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>
-                Ключевые навыки и компетенции
+            {/* Status message */}
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                bgcolor: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+              }}
+            >
+              <DocumentIcon sx={{ color: '#D97706' }} />
+              <Typography variant="body2" sx={{ color: '#92400E' }}>
+                Файл резюме не был прикреплен. Вы можете прикрепить файл в карточке кандидата справа.
               </Typography>
-              <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
-                {cv.skills.map((skill) => (
-                  <Chip
-                    key={skill}
-                    label={skill}
-                    size="small"
-                    sx={{
-                      bgcolor: '#EBF6F0',
-                      color: '#168B48',
-                      fontWeight: 600,
-                      borderRadius: 1.5,
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 2.5 }} />
-
-            {/* Experience */}
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <WorkIcon sx={{ color: '#168B48', fontSize: 20 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1F2937', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>
-                  Опыт работы
-                </Typography>
-              </Box>
-
-              <Stack spacing={2}>
-                {cv.workExperience.map((exp, idx) => (
-                  <Box key={idx} sx={{ pl: 1, borderLeft: '2px solid #E5E7EB' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#111827' }}>
-                        {exp.role} — <span style={{ color: '#6B7280' }}>{exp.company}</span>
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#9CA3AF', fontWeight: 600 }}>
-                        {exp.period}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ color: '#4B5563', mt: 0.5 }}>
-                      {exp.description}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 2.5 }} />
-
-            {/* Education */}
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <SchoolIcon sx={{ color: '#168B48', fontSize: 20 }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1F2937', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem' }}>
-                  Образование
-                </Typography>
-              </Box>
-              <Box sx={{ pl: 1 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#111827' }}>
-                  {cv.education.institution}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#6B7280' }}>
-                  {cv.education.degree} · {cv.education.year}
-                </Typography>
-              </Box>
             </Box>
           </Paper>
         )}
@@ -355,7 +370,7 @@ export default function ResumePreviewModal({
           >
             Печать
           </Button>
-          {(storedResume?.dataUrl || !isHttpUrl) && (
+          {storedResume?.dataUrl && (
             <Button
               variant="outlined"
               size="small"

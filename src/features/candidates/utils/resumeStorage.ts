@@ -166,74 +166,26 @@ export function downloadResumeFile(filename: string, dataUrl: string): void {
 }
 
 /**
- * Generates structured CV information for any candidate if no custom file uploaded
+ * Candidate basic summary containing only actual data
  */
-export type CandidateCvSummary = {
+export type CandidateSummary = {
   fullName: string;
   position: string;
   email: string;
   phone: string;
-  location: string;
-  experienceYears: number;
-  about: string;
-  skills: string[];
-  workExperience: {
-    period: string;
-    company: string;
-    role: string;
-    description: string;
-  }[];
-  education: {
-    year: string;
-    institution: string;
-    degree: string;
-  };
+  notes?: string | null;
 };
 
-export function getStructuredCvForCandidate(
+export function getCandidateSummary(
   candidate: Candidate,
   vacancyTitle?: string
-): CandidateCvSummary {
-  const fullName = `${candidate.firstName} ${candidate.lastName}`;
-  const pos = vacancyTitle || 'Специалист';
-
+): CandidateSummary {
   return {
-    fullName,
-    position: pos,
-    email: candidate.email || 'не указан',
-    phone: candidate.phone || 'не указан',
-    location: 'Алматы, Казахстан',
-    experienceYears: candidate.notes?.includes('3 года') ? 3 : 2,
-    about:
-      candidate.notes ||
-      `Кандидат на позицию ${pos}. Ответственный, пунктуальный, нацелен на результат в команде JanaPost.`,
-    skills: [
-      'Клиентоориентированность',
-      'Оперативность',
-      'Внимательность к деталям',
-      'Коммуникабельность',
-      'Работа в команде',
-      'Стрессоустойчивость',
-    ],
-    workExperience: [
-      {
-        period: '2022 — 2024',
-        company: 'Логистическая компания',
-        role: pos,
-        description:
-          'Своевременное выполнение операционных задач, координация с диспетчером и соблюдение стандартов сервиса.',
-      },
-      {
-        period: '2020 — 2022',
-        company: 'Торговая сеть / Ритейл',
-        role: 'Специалист по сервису',
-        description: 'Взаимодействие с клиентами, оформление первичных документов, работа в CRM.',
-      },
-    ],
-    education: {
-      year: '2016 — 2020',
-      institution: 'Казахский Национальный Университет',
-      degree: 'Высшее / Бакалавриат',
-    },
+    fullName: `${candidate.firstName} ${candidate.lastName}`,
+    position: vacancyTitle || 'Вакансия',
+    email: candidate.email || 'Не указан',
+    phone: candidate.phone || 'Не указан',
+    notes: candidate.notes || null,
   };
 }
+
