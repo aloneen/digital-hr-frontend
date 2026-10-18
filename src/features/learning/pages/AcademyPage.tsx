@@ -13,25 +13,33 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
+  InputAdornment,
   LinearProgress,
   Slider,
   Tab,
   Tabs,
+  TextField,
   Typography,
 } from '@mui/material';
 import {
   AccessTime,
+  AssignmentInd,
   CheckCircle,
+  Clear,
   MenuBook,
   OpenInNew,
   PlayArrow,
   School,
+  Search,
   TrendingUp,
 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../auth/context/AuthContext';
 import { learningApi } from '../api/learningApi';
-import type { CourseAssignment } from '../../../shared/types/learning';
+import AssignCourseDialog from '../components/AssignCourseDialog';
+import type { Course, CourseAssignment } from '../../../shared/types/learning';
 
 export default function AcademyPage() {
   const { t } = useTranslation();
@@ -41,6 +49,11 @@ export default function AcademyPage() {
   const [progressVal, setProgressVal] = useState<number>(0);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { user } = useAuth();
+  const canAssign = !user || user.role !== 'EMPLOYEE';
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [courseToAssign, setCourseToAssign] = useState<Course | null>(null);
+  const [catalogSearch, setCatalogSearch] = useState('');
 
   const { data: myCourses = [], isLoading: isLoadingMy } = useQuery({
     queryKey: ['learning', 'my-courses'],
@@ -51,6 +64,21 @@ export default function AcademyPage() {
     queryKey: ['learning', 'courses'],
     queryFn: learningApi.getAllCourses,
   });
+
+  const filteredCourses = useMemo(() => {
+    const q = catalogSearch.trim().toLowerCase();
+    if (!q) return allCourses;
+    return allCourses.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        (c.description && c.description.toLowerCase().includes(q)),
+    );
+  }, [allCourses, catalogSearch]);
+
+  const handleOpenAssign = (course: Course | null) => {
+    setCourseToAssign(course);
+    setAssignDialogOpen(true);
+  };
 
   const updateProgressMutation = useMutation({
     mutationFn: ({ id, progressPercent }: { id: number; progressPercent: number }) =>
@@ -318,13 +346,76 @@ export default function AcademyPage() {
 
       {activeTab === 'catalog' && (
         <>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'space-between',
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            <TextField
+              size="small"
+              placeholder={t('learning.searchCatalogPlaceholder')}
+              value={catalogSearch}
+              onChange={(e) => setCatalogSearch(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: 'text.secondary', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: catalogSearch ? (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setCatalogSearch('')}>
+                        <Clear sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                },
+              }}
+              sx={{ maxWidth: { sm: 380 }, width: '100%', bgcolor: '#fff', borderRadius: 2 }}
+            />
+
+            {canAssign && (
+              <Button
+                variant="contained"
+                startIcon={<AssignmentInd />}
+                onClick={() => handleOpenAssign(null)}
+                sx={{
+                  bgcolor: '#7c3aed',
+                  '&:hover': { bgcolor: '#6d28d9' },
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)',
+                }}
+              >
+                {t('learning.assignCourseBtn')}
+              </Button>
+            )}
+          </Box>
+
           {isLoadingCatalog ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
               <CircularProgress />
             </Box>
+          ) : filteredCourses.length === 0 ? (
+            <Card sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+              <School sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                Курсы не найдены
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Попробуйте изменить поисковый запрос
+              </Typography>
+            </Card>
           ) : (
             <Grid container spacing={3}>
-              {allCourses.map((course) => (
+              {filteredCourses.map((course) => (
                 <Grid size={{ xs: 12, md: 4 }} key={course.id}>
                   <Card
                     sx={{
@@ -335,6 +426,11 @@ export default function AcademyPage() {
                       justifyContent: 'space-between',
                       border: '1px solid #e2e8f0',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+                      },
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
@@ -357,17 +453,49 @@ export default function AcademyPage() {
                       </Typography>
                     </CardContent>
 
-                    <Box sx={{ p: 2, pt: 0 }}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
-                        onClick={() => {
-                          setSuccessMessage(t('learning.courseAvailable', { courseTitle: course.title }));
-                        }}
-                      >
-                        {t('learning.moreInfo')}
-                      </Button>
+                    <Box sx={{ p: 2, pt: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {course.contentUrl && (
+                        <Button
+                          fullWidth
+                          variant="text"
+                          size="small"
+                          endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+                          href={course.contentUrl}
+                          target="_blank"
+                          sx={{ textTransform: 'none', color: '#7c3aed', fontWeight: 600 }}
+                        >
+                          {t('learning.courseMaterials')}
+                        </Button>
+                      )}
+
+                      {canAssign ? (
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          startIcon={<AssignmentInd />}
+                          onClick={() => handleOpenAssign(course)}
+                          sx={{
+                            bgcolor: '#7c3aed',
+                            '&:hover': { bgcolor: '#6d28d9' },
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            borderRadius: 2,
+                          }}
+                        >
+                          {t('learning.assignToEmployee')}
+                        </Button>
+                      ) : (
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          sx={{ textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+                          onClick={() => {
+                            setSuccessMessage(t('learning.courseAvailable', { courseTitle: course.title }));
+                          }}
+                        >
+                          {t('learning.moreInfo')}
+                        </Button>
+                      )}
                     </Box>
                   </Card>
                 </Grid>
@@ -376,6 +504,21 @@ export default function AcademyPage() {
           )}
         </>
       )}
+
+      <AssignCourseDialog
+        open={assignDialogOpen}
+        onClose={() => setAssignDialogOpen(false)}
+        initialCourse={courseToAssign}
+        courses={allCourses}
+        onSuccess={(assignment, employeeName) => {
+          setSuccessMessage(
+            t('learning.assignSuccess', {
+              courseTitle: assignment.courseTitle,
+              employeeName,
+            }),
+          );
+        }}
+      />
 
       <Dialog open={progressDialogOpen} onClose={() => setProgressDialogOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>

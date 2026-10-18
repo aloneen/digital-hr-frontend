@@ -25,12 +25,15 @@ import WorkIcon from '@mui/icons-material/Work';
 import EditIcon from '@mui/icons-material/Edit';
 import ChatIcon from '@mui/icons-material/Chat';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import SchoolIcon from '@mui/icons-material/School';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { employeesApi } from '../api/employeesApi';
+import { learningApi } from '../../learning/api/learningApi';
 import EmployeeFormDialog from '../components/EmployeeFormDialog';
 import SendMessageDialog from '../components/SendMessageDialog';
+import AssignCourseDialog from '../../learning/components/AssignCourseDialog';
 import type { EmployeeUpdateRequest } from '../../../shared/types/employee';
 
 const statusColor: Record<string, 'success' | 'warning' | 'default'> = {
@@ -48,6 +51,7 @@ export default function EmployeeDetailPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isAssignCourseOpen, setIsAssignCourseOpen] = useState(false);
 
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -59,6 +63,12 @@ export default function EmployeeDetailPage() {
     queryKey: ['employee', employeeId],
     queryFn: () => employeesApi.getById(employeeId),
     enabled: !!employeeId,
+  });
+
+  const { data: courses = [] } = useQuery({
+    queryKey: ['learning', 'courses'],
+    queryFn: learningApi.getAllCourses,
+    staleTime: 5 * 60 * 1000,
   });
 
   const updateMutation = useMutation({
@@ -203,6 +213,26 @@ export default function EmployeeDetailPage() {
                   Написать
                 </Button>
               </Stack>
+
+              {employee.status !== 'TERMINATED' && (
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<SchoolIcon sx={{ color: '#7c3aed' }} />}
+                  onClick={() => setIsAssignCourseOpen(true)}
+                  sx={{
+                    mt: 1.5,
+                    borderColor: '#7c3aed',
+                    color: '#7c3aed',
+                    '&:hover': { borderColor: '#6d28d9', bgcolor: 'rgba(124, 58, 237, 0.04)' },
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                  }}
+                >
+                  Назначить курс Академии
+                </Button>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -310,6 +340,21 @@ export default function EmployeeDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Assign Course Dialog */}
+      <AssignCourseDialog
+        open={isAssignCourseOpen}
+        onClose={() => setIsAssignCourseOpen(false)}
+        courses={courses}
+        initialEmployeeId={employeeId}
+        onSuccess={(assignment) => {
+          setSnackbar({
+            open: true,
+            message: `Курс «${assignment.courseTitle}» успешно назначен сотруднику ${fullName}!`,
+            severity: 'success',
+          });
+        }}
+      />
 
       <Snackbar
         open={snackbar.open}
